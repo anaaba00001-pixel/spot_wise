@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
-import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart' hide Path;
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/routes/app_routes.dart';
 import '../../core/constants/categories.dart';
@@ -164,7 +165,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
       appBar: AppBar(
         leading: const AppMenuButton(),
         titleSpacing: 0,
-        title: const AppLogo(size: 40),
+        title: const AppLogo(size: 44),
         actions: [
           if (auth.role.canModerate)
             IconButton(
@@ -533,6 +534,21 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
                       );
                     },
                   ),
+                  const SizedBox(height: 2),
+                  InkWell(
+                    onTap: () => launchUrl(
+                      Uri.parse('https://open-meteo.com/'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    child: Text(
+                      'مصدر الطقس',
+                      style: text.labelSmall?.copyWith(
+                        color: AppColors.cream.withValues(alpha: .78),
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppColors.cream.withValues(alpha: .55),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -564,24 +580,40 @@ class _HailHeritagePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final mountain = Paint()
-      ..color = const Color(0x24F6DBC0)
+    final backMountain = Paint()
+      ..color = const Color(0x18F6DBC0)
       ..style = PaintingStyle.fill;
-    final ridge = Path()
+    final backRidge = Path()
       ..moveTo(0, size.height)
-      ..lineTo(34, 132)
-      ..lineTo(58, 151)
-      ..lineTo(96, 91)
-      ..lineTo(126, 132)
-      ..lineTo(160, 74)
-      ..lineTo(198, 123)
-      ..lineTo(size.width, 99)
+      ..lineTo(0, 126)
+      ..lineTo(42, 88)
+      ..lineTo(76, 119)
+      ..lineTo(118, 67)
+      ..lineTo(157, 114)
+      ..lineTo(194, 82)
+      ..lineTo(size.width, 117)
       ..lineTo(size.width, size.height)
       ..close();
-    canvas.drawPath(ridge, mountain);
+    canvas.drawPath(backRidge, backMountain);
+
+    final frontMountain = Paint()
+      ..color = const Color(0x2EF6DBC0)
+      ..style = PaintingStyle.fill;
+    final frontRidge = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(0, 151)
+      ..lineTo(36, 119)
+      ..lineTo(63, 143)
+      ..lineTo(102, 101)
+      ..lineTo(137, 146)
+      ..lineTo(178, 113)
+      ..lineTo(size.width, 147)
+      ..lineTo(size.width, size.height)
+      ..close();
+    canvas.drawPath(frontRidge, frontMountain);
 
     final line = Paint()
-      ..color = const Color(0x55F6DBC0)
+      ..color = const Color(0x70E5C59F)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round
@@ -1111,7 +1143,7 @@ class _CategoryTileState extends State<_CategoryTile>
             button: true,
             selected: selected,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 260),
+              duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
               width: 112,
               height: 116,
@@ -1120,7 +1152,7 @@ class _CategoryTileState extends State<_CategoryTile>
                     ? LinearGradient(
                         begin: Alignment.topRight,
                         end: Alignment.bottomLeft,
-                        colors: [scheme.primary, AppColors.coral],
+                        colors: [AppColors.tealDark, AppColors.coral],
                       )
                     : null,
                 color: selected ? null : fill,
@@ -1147,46 +1179,67 @@ class _CategoryTileState extends State<_CategoryTile>
                 child: InkWell(
                   onTap: widget.onTap,
                   onHighlightChanged: (value) => setState(() => _pressed = value),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 260),
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? Colors.white.withValues(alpha: .18)
-                                : category.color.withValues(alpha: .13),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 220),
-                            transitionBuilder: (child, animation) =>
-                                ScaleTransition(scale: animation, child: child),
-                            child: Icon(
-                              selected ? Icons.check_rounded : category.icon,
-                              key: ValueKey(selected),
-                              color: selected ? Colors.white : category.color,
-                              size: 25,
+                  child: Stack(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 220),
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? Colors.white.withValues(alpha: .18)
+                                    : category.color.withValues(alpha: .13),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Icon(
+                                category.icon,
+                                color: selected ? Colors.white : category.color,
+                                size: 25,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              category.label,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: selected ? Colors.white : scheme.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      PositionedDirectional(
+                        top: 7,
+                        end: 7,
+                        child: AnimatedScale(
+                          scale: selected ? 1 : 0,
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutBack,
+                          child: const DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(3),
+                              child: Icon(
+                                Icons.check_rounded,
+                                size: 12,
+                                color: AppColors.tealDark,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          category.label,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: selected ? Colors.white : scheme.onSurface,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
