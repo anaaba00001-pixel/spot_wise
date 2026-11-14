@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
@@ -165,7 +164,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
       appBar: AppBar(
         leading: const AppMenuButton(),
         titleSpacing: 0,
-        title: const AppLogo(size: 34),
+        title: const AppLogo(size: 40),
         actions: [
           if (auth.role.canModerate)
             IconButton(
@@ -488,9 +487,9 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
         child: Stack(
           children: [
             const PositionedDirectional(
-              end: -45,
-              bottom: -74,
-              child: _DiscoveryRings(),
+              end: -8,
+              bottom: -12,
+              child: _HailHeritageArt(),
             ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
@@ -534,17 +533,6 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
                       );
                     },
                   ),
-                  InkWell(
-                    onTap: () => launchUrl(Uri.https('open-meteo.com')),
-                    child: Text(
-                      'المصدر: أوبن ميتيو',
-                      style: text.bodySmall?.copyWith(
-                        color: AppColors.cream,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppColors.cream,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -555,41 +543,86 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
   }
 }
 
-/// An abstract map motif for the discovery banner.
-class _DiscoveryRings extends StatelessWidget {
-  const _DiscoveryRings();
+/// Decorative Hail mountains and abstract glyphs inspired by regional
+/// Thamudic rock inscriptions. Kept intentionally subtle behind the content.
+class _HailHeritageArt extends StatelessWidget {
+  const _HailHeritageArt();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: 182,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          for (final diameter in [82.0, 116.0, 150.0, 182.0])
-            Container(
-              width: diameter,
-              height: diameter,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0x48F6DBC0)),
-              ),
-            ),
-          const Positioned(
-            top: 43,
-            left: 45,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.coralMist,
-              ),
-              child: SizedBox.square(dimension: 7),
-            ),
-          ),
-        ],
+    return IgnorePointer(
+      child: CustomPaint(
+        size: const Size(230, 190),
+        painter: _HailHeritagePainter(),
       ),
     );
   }
+}
+
+class _HailHeritagePainter extends CustomPainter {
+  const _HailHeritagePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final mountain = Paint()
+      ..color = const Color(0x24F6DBC0)
+      ..style = PaintingStyle.fill;
+    final ridge = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(34, 132)
+      ..lineTo(58, 151)
+      ..lineTo(96, 91)
+      ..lineTo(126, 132)
+      ..lineTo(160, 74)
+      ..lineTo(198, 123)
+      ..lineTo(size.width, 99)
+      ..lineTo(size.width, size.height)
+      ..close();
+    canvas.drawPath(ridge, mountain);
+
+    final line = Paint()
+      ..color = const Color(0x55F6DBC0)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final glyphs = <Path>[
+      Path()
+        ..moveTo(48, 46)
+        ..lineTo(48, 82)
+        ..moveTo(35, 58)
+        ..lineTo(61, 58)
+        ..moveTo(38, 75)
+        ..lineTo(58, 65),
+      Path()
+        ..moveTo(92, 31)
+        ..lineTo(76, 56)
+        ..lineTo(103, 56)
+        ..close()
+        ..moveTo(90, 60)
+        ..lineTo(90, 78),
+      Path()
+        ..moveTo(142, 30)
+        ..lineTo(142, 67)
+        ..moveTo(127, 43)
+        ..lineTo(158, 55)
+        ..moveTo(127, 59)
+        ..lineTo(157, 40),
+      Path()
+        ..moveTo(185, 39)
+        ..lineTo(170, 53)
+        ..lineTo(185, 69)
+        ..lineTo(201, 53)
+        ..close(),
+    ];
+    for (final glyph in glyphs) {
+      canvas.drawPath(glyph, line);
+    }
+    canvas.drawCircle(const Offset(210, 27), 4, line);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Ink-filled call-to-action shown while browsing a destination: hands the
@@ -987,15 +1020,17 @@ class _DalalCategorySections extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (final category in Categories.inSection(section))
+                for (final entry
+                    in Categories.inSection(section).asMap().entries)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(
                       end: AppSpacing.sm,
                     ),
                     child: _CategoryTile(
-                      category: category,
-                      selected: selected.contains(category.id),
-                      onTap: () => onToggle(category.id),
+                      category: entry.value,
+                      index: entry.key,
+                      selected: selected.contains(entry.value.id),
+                      onTap: () => onToggle(entry.value.id),
                     ),
                   ),
               ],
@@ -1008,21 +1043,51 @@ class _DalalCategorySections extends StatelessWidget {
   }
 }
 
-class _CategoryTile extends StatelessWidget {
+class _CategoryTile extends StatefulWidget {
   final SpotCategory category;
+  final int index;
   final bool selected;
   final VoidCallback onTap;
 
   const _CategoryTile({
     required this.category,
+    required this.index,
     required this.selected,
     required this.onTap,
   });
 
   @override
+  State<_CategoryTile> createState() => _CategoryTileState();
+}
+
+class _CategoryTileState extends State<_CategoryTile>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _entrance = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
+  bool _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(Duration(milliseconds: widget.index * 55), () {
+      if (mounted) _entrance.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _entrance.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final category = widget.category;
+    final selected = widget.selected;
     final fill = selected
         ? scheme.primary
         : theme.brightness == Brightness.dark
@@ -1032,41 +1097,98 @@ class _CategoryTile extends StatelessWidget {
             Colors.white,
           );
 
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: SizedBox(
-        width: 90,
-        child: Material(
-          color: fill,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppRadius.brLg,
-            side: BorderSide(color: selected ? fill : scheme.outline),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.md,
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: _entrance, curve: Curves.easeOut),
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(.18, .08),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: _entrance, curve: Curves.easeOutCubic)),
+        child: AnimatedScale(
+          scale: _pressed ? .96 : 1,
+          duration: const Duration(milliseconds: 130),
+          child: Semantics(
+            button: true,
+            selected: selected,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutCubic,
+              width: 112,
+              height: 116,
+              decoration: BoxDecoration(
+                gradient: selected
+                    ? LinearGradient(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: [scheme.primary, AppColors.coral],
+                      )
+                    : null,
+                color: selected ? null : fill,
+                borderRadius: AppRadius.brXl,
+                border: Border.all(
+                  color: selected
+                      ? Colors.white.withValues(alpha: .22)
+                      : category.color.withValues(alpha: .18),
+                ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: scheme.primary.withValues(alpha: .24),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ]
+                    : AppColors.softShadow,
               ),
-              child: Column(
-                children: [
-                  Icon(
-                    selected ? Icons.check_rounded : category.icon,
-                    color: selected ? scheme.onPrimary : scheme.primary,
-                    size: 24,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    category.label,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: selected ? scheme.onPrimary : scheme.onSurface,
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: AppRadius.brXl,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: widget.onTap,
+                  onHighlightChanged: (value) => setState(() => _pressed = value),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 260),
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? Colors.white.withValues(alpha: .18)
+                                : category.color.withValues(alpha: .13),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 220),
+                            transitionBuilder: (child, animation) =>
+                                ScaleTransition(scale: animation, child: child),
+                            child: Icon(
+                              selected ? Icons.check_rounded : category.icon,
+                              key: ValueKey(selected),
+                              color: selected ? Colors.white : category.color,
+                              size: 25,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          category.label,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: selected ? Colors.white : scheme.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                ],
+                ),
               ),
             ),
           ),

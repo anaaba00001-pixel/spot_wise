@@ -29,13 +29,15 @@ class Categories {
   static const _red = Color(0xFF9B4B4B);
 
   static const List<SpotCategory> all = [
-    SpotCategory(id: 'hail_cooking', label: 'طبخات حائل', section: 'الطعام والضيافة', icon: Icons.menu_book_rounded, color: _gold),
+    SpotCategory(id: 'hail_cooking', label: 'أسر منتجة', section: 'الطعام والضيافة', icon: Icons.storefront_rounded, color: _gold),
     SpotCategory(id: 'popular_food', label: 'أكلات شعبية', section: 'الطعام والضيافة', icon: Icons.rice_bowl_rounded, color: _gold),
     SpotCategory(id: 'restaurant', label: 'مطاعم', section: 'الطعام والضيافة', icon: Icons.restaurant_rounded, color: _gold),
     SpotCategory(id: 'cafe', label: 'مقاهٍ', section: 'الطعام والضيافة', icon: Icons.local_cafe_rounded, color: _gold),
     SpotCategory(id: 'bakery', label: 'مخابز', section: 'الطعام والضيافة', icon: Icons.bakery_dining_rounded, color: _gold),
     SpotCategory(id: 'crochet', label: 'ورش كروشيه', section: 'الورش والأنشطة', icon: Icons.handyman_rounded, color: _rose),
     SpotCategory(id: 'cake', label: 'ورش تزيين الكيك', section: 'الورش والأنشطة', icon: Icons.cake_rounded, color: _rose),
+    SpotCategory(id: 'pottery_workshop', label: 'ورش الفخار', section: 'الورش والأنشطة', icon: Icons.local_fire_department_rounded, color: _rose),
+    SpotCategory(id: 'sadu_workshop', label: 'ورش السدو', section: 'الورش والأنشطة', icon: Icons.texture_rounded, color: _rose),
     SpotCategory(id: 'club', label: 'نوادٍ', section: 'الورش والأنشطة', icon: Icons.groups_rounded, color: _rose),
     SpotCategory(id: 'paragliding', label: 'طيران مظلي', section: 'الورش والأنشطة', icon: Icons.paragliding_rounded, color: _rose),
     SpotCategory(id: 'heritage', label: 'معالم تراثية', section: 'الطبيعة والتراث', icon: Icons.account_balance_rounded, color: _green),
