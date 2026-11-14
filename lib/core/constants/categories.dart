@@ -42,7 +42,7 @@ class Categories {
     SpotCategory(id: 'story', label: 'قصص أثرية', section: 'الطبيعة والتراث', icon: Icons.auto_stories_rounded, color: _green),
     SpotCategory(id: 'oasis', label: 'واحات', section: 'الطبيعة والتراث', icon: Icons.water_rounded, color: _green),
     SpotCategory(id: 'park', label: 'حدائق', section: 'الطبيعة والتراث', icon: Icons.park_rounded, color: _green),
-    SpotCategory(id: 'camp', label: 'أماكن كشتة', section: 'الطبيعة والتراث', icon: Icons.camping_rounded, color: _green),
+    SpotCategory(id: 'camp', label: 'أماكن كشتة', section: 'الطبيعة والتراث', icon: Icons.terrain_rounded, color: _green),
     SpotCategory(id: 'hiking', label: 'مسارات هيكنق', section: 'الطبيعة والتراث', icon: Icons.hiking_rounded, color: _green),
     SpotCategory(id: 'hotel', label: 'فنادق', section: 'الإقامة', icon: Icons.hotel_rounded, color: _blue),
     SpotCategory(id: 'chalet', label: 'شاليهات', section: 'الإقامة', icon: Icons.villa_rounded, color: _blue),
