@@ -238,17 +238,28 @@ class SpotOverlayCard extends StatelessWidget {
           children: [
             NetworkPhoto(spot.coverPhoto, fit: BoxFit.cover),
             const DecoratedBox(
-              decoration: BoxDecoration(gradient: AppColors.cardScrim),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Color(0x553E2343),
+                    AppColors.tealDark,
+                  ],
+                  stops: [0.32, 0.62, 1],
+                ),
+              ),
             ),
-            Positioned(
+            PositionedDirectional(
               top: AppSpacing.md,
-              left: AppSpacing.md,
+              start: AppSpacing.md,
               child: CategoryChip(spot.categoryId, glass: true),
             ),
             if (onToggleSave != null)
-              Positioned(
+              PositionedDirectional(
                 top: AppSpacing.sm,
-                right: AppSpacing.sm,
+                end: AppSpacing.sm,
                 child: SaveHeartPop(
                   saved: isSaved,
                   child: GlassIconButton(

@@ -1,5 +1,3 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -94,9 +92,7 @@ class _HomeShellState extends State<HomeShell> {
   }
 }
 
-/// Frosted-glass pill dock floating above the bottom edge — the shell's
-/// bottom navigation. Same four destinations + the center "Add a spot"
-/// action; only the presentation changed.
+/// The floating navigation dock and its central add-place action.
 class _FloatingDock extends StatelessWidget {
   final HomeTab tab;
   final VoidCallback onAddSpot;
@@ -105,12 +101,6 @@ class _FloatingDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fill = isDark
-        ? AppColors.darkSurface.withValues(alpha: 0.72)
-        : Colors.white.withValues(alpha: 0.80);
-
     return SafeArea(
       top: false,
       minimum: const EdgeInsets.fromLTRB(
@@ -125,55 +115,47 @@ class _FloatingDock extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: AppSpacing.dockMaxWidth),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.dock),
+              borderRadius: BorderRadius.circular(AppRadius.card),
               boxShadow: AppColors.softShadow,
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.dock),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                child: Container(
-                  height: AppSpacing.dockHeight,
-                  decoration: BoxDecoration(
-                    color: fill,
-                    borderRadius: BorderRadius.circular(AppRadius.dock),
-                    border: Border.all(
-                      color: scheme.outline.withValues(alpha: 0.5),
+            child: Material(
+              color: AppColors.tealDark,
+              borderRadius: AppRadius.brCard,
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox(
+                height: AppSpacing.dockHeight,
+                child: Row(
+                  children: [
+                    _NavItem(
+                      tab: tab,
+                      index: 0,
+                      icon: Icons.home_outlined,
+                      selectedIcon: Icons.home_rounded,
+                      label: 'الرئيسية',
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      _NavItem(
-                        tab: tab,
-                        index: 0,
-                        icon: Icons.home_outlined,
-                        selectedIcon: Icons.home_rounded,
-                        label: 'الرئيسية',
-                      ),
-                      _NavItem(
-                        tab: tab,
-                        index: 1,
-                        icon: Icons.map_outlined,
-                        selectedIcon: Icons.map_rounded,
-                        label: 'الخريطة',
-                      ),
-                      _DockAddButton(onTap: onAddSpot),
-                      _NavItem(
-                        tab: tab,
-                        index: 2,
-                        icon: Icons.auto_awesome_outlined,
-                        selectedIcon: Icons.auto_awesome_rounded,
-                        label: 'اقتراحات',
-                      ),
-                      _NavItem(
-                        tab: tab,
-                        index: 3,
-                        icon: Icons.luggage_outlined,
-                        selectedIcon: Icons.luggage_rounded,
-                        label: 'المفضلة',
-                      ),
-                    ],
-                  ),
+                    _NavItem(
+                      tab: tab,
+                      index: 1,
+                      icon: Icons.map_outlined,
+                      selectedIcon: Icons.map_rounded,
+                      label: 'الخريطة',
+                    ),
+                    _DockAddButton(onTap: onAddSpot),
+                    _NavItem(
+                      tab: tab,
+                      index: 2,
+                      icon: Icons.auto_awesome_outlined,
+                      selectedIcon: Icons.auto_awesome_rounded,
+                      label: 'اقتراحات',
+                    ),
+                    _NavItem(
+                      tab: tab,
+                      index: 3,
+                      icon: Icons.luggage_outlined,
+                      selectedIcon: Icons.luggage_rounded,
+                      label: 'المفضلة',
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -184,7 +166,7 @@ class _FloatingDock extends StatelessWidget {
   }
 }
 
-/// Center "Add a spot" button — an ink circle inside the dock pill.
+/// Center "Add a spot" action.
 class _DockAddButton extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -192,9 +174,8 @@ class _DockAddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
-      width: 64,
+      width: 58,
       child: Center(
         child: Tooltip(
           message: 'إضافة مكان',
@@ -210,18 +191,18 @@ class _DockAddButton extends StatelessWidget {
               ],
             ),
             child: Material(
-              color: isDark ? AppColors.darkInk : AppColors.ink,
-              shape: const CircleBorder(),
+              color: AppColors.coralMist,
+              borderRadius: AppRadius.brMd,
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onTap,
                 child: SizedBox(
-                  width: 52,
-                  height: 52,
-                  child: Icon(
+                  width: 44,
+                  height: 44,
+                  child: const Icon(
                     Icons.add_rounded,
                     size: 26,
-                    color: isDark ? AppColors.darkBg : Colors.white,
+                    color: AppColors.tealDark,
                   ),
                 ),
               ),
@@ -251,27 +232,47 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = tab.index == index;
-    final scheme = Theme.of(context).colorScheme;
-    final color = selected ? scheme.onSurface : scheme.onSurfaceVariant;
+    final color = selected ? AppColors.cream : AppColors.coralMist;
     return Expanded(
-      child: InkWell(
-        onTap: () => tab.go(index),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(selected ? selectedIcon : icon, color: color, size: 24),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                color: color,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+        child: Semantics(
+          button: true,
+          selected: selected,
+          child: Material(
+            color: selected ? AppColors.teal : Colors.transparent,
+            borderRadius: AppRadius.brMd,
+            child: InkWell(
+              onTap: () => tab.go(index),
+              borderRadius: AppRadius.brMd,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      selected ? selectedIcon : icon,
+                      color: color,
+                      size: 22,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: color,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

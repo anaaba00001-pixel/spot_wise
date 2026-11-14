@@ -83,6 +83,7 @@ flutter:
   # flutter_dotenv. It is git-ignored; see .env.example for the template.
   assets:
     - .env
+    - assets/dalal-app-icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

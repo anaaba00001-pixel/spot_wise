@@ -5,6 +5,7 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_logo.dart';
 
 class _Page {
   final IconData icon;
@@ -37,13 +38,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       Icons.bookmark_added_rounded,
       'Save favourites, plan trips',
       'Bookmark spots, build day-by-day trips and get reminders — all in one place.',
-      [AppColors.coral, AppColors.amber],
+      [AppColors.tealDark, AppColors.tealLight],
     ),
     _Page(
       Icons.auto_awesome_rounded,
       'Let AI plan your days',
       'Tell us your dates, interests and budget — get a tailored day-by-day itinerary in seconds.',
-      [Color(0xFF6C5CE7), AppColors.teal],
+      [AppColors.tealLight, AppColors.tealDark],
     ),
   ];
 
@@ -67,11 +68,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _finish,
-                child: Text(last ? '' : 'Skip'),
+            Padding(
+              padding: AppSpacing.screenPadding,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const AppLogo(size: 34),
+                  TextButton(
+                    onPressed: _finish,
+                    child: Text(last ? '' : 'Skip'),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -130,36 +137,60 @@ class _PageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 180,
-            height: 180,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              shape: BoxShape.circle,
-              boxShadow: AppColors.softShadow,
-            ),
-            child: Icon(page.icon, size: 76, color: page.colors.first),
+    final text = Theme.of(context).textTheme;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            children: [
+              Text(
+                page.title,
+                style: text.displaySmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xxl),
+              Container(
+                width: double.infinity,
+                height: 164,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: page.colors,
+                  ),
+                  borderRadius: AppRadius.brXl,
+                  boxShadow: AppColors.softShadow,
+                ),
+                child: Center(
+                  child: Container(
+                    width: 92,
+                    height: 92,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0x26F6DBC0),
+                      border: Border.all(color: const Color(0x66F6DBC0)),
+                    ),
+                    child: Icon(
+                      page.icon,
+                      size: 48,
+                      color: AppColors.coralMist,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Text(
+                page.body,
+                style: text.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.xxl),
-          Text(
-            page.title,
-            style: Theme.of(context).textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            page.body,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }

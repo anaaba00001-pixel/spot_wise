@@ -13,7 +13,6 @@ import '../../models/spot.dart';
 import '../../models/spot_filter.dart';
 import '../../providers/ai_planner_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/category_store.dart';
 import '../../providers/spots_provider.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/app_menu_button.dart';
@@ -97,8 +96,11 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
     );
     if (picked == null || !mounted) return;
     if (picked.spot != null) {
-      Navigator.pushNamed(context, AppRoutes.spotDetails,
-          arguments: picked.spot);
+      Navigator.pushNamed(
+        context,
+        AppRoutes.spotDetails,
+        arguments: picked.spot,
+      );
       return;
     }
     setState(() {
@@ -154,7 +156,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
       appBar: AppBar(
         leading: const AppMenuButton(),
         titleSpacing: 0,
-        title: const AppLogo(size: 28),
+        title: const AppLogo(size: 34),
         actions: [
           if (auth.role.canModerate)
             IconButton(
@@ -244,11 +246,6 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
           cityCount: spotsP.cities.length,
           countryCount: spotsP.countryCounts.length,
         ),
-        const SizedBox(height: AppSpacing.sm),
-        _DalalCategorySections(
-          selected: _filter.categoryIds,
-          onToggle: _toggleCategory,
-        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.lg,
@@ -263,9 +260,8 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
                   country: _filter.country,
                   city: _filter.city,
                   onPickCountry: () => _pickDestination(),
-                  onPickCity: () => _pickDestination(
-                    cityFirst: _filter.country.isNotEmpty,
-                  ),
+                  onPickCity: () =>
+                      _pickDestination(cityFirst: _filter.country.isNotEmpty),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -285,7 +281,14 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
           ),
         ),
 
-        if (activeMode) ...[
+        if (!activeMode && featured.isNotEmpty) ...[
+          const SectionHeader(
+            title: 'Featured',
+            subtitle: 'Hand-picked by the SpotWise team',
+          ),
+          _rail(context, featured, auth),
+        ],
+        if (activeMode)
           _ActiveFilterBar(
             count: results.length,
             filter: _filter,
@@ -294,6 +297,11 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
             onClearFilters: () => setState(() => _filter = const SpotFilter()),
             onClearLocation: _clearLocation,
           ),
+        _DalalCategorySections(
+          selected: _filter.categoryIds,
+          onToggle: _toggleCategory,
+        ),
+        if (activeMode) ...[
           if (_filter.country.isNotEmpty) ...[
             _PlanTripBanner(place: _destinationPlace, onTap: _planTrip),
             if (results.any((s) => s.featured)) ...[
@@ -324,13 +332,6 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
               ),
             ),
         ] else ...[
-          if (featured.isNotEmpty) ...[
-            const SectionHeader(
-              title: 'Featured',
-              subtitle: 'Hand-picked by the SpotWise team',
-            ),
-            _rail(context, featured, auth),
-          ],
           if (recommended.isNotEmpty) ...[
             SectionHeader(
               title: 'Recommended for you',
@@ -386,7 +387,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
   /// Horizontal rail of editorial overlay cards (Featured / Recommended).
   Widget _rail(BuildContext context, List<Spot> spots, AuthProvider auth) {
     return SizedBox(
-      height: 230,
+      height: 194,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(
@@ -400,7 +401,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
         itemBuilder: (_, i) {
           final spot = spots[i];
           return SizedBox(
-            width: 270,
+            width: 238,
             child: SpotOverlayCard(
               spot: spot,
               isSaved: auth.isSaved(spot.id),
@@ -442,7 +443,6 @@ class _GreetingHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
     final now = DateTime.now();
 
     final (greeting, emoji) = switch (now.hour) {
@@ -463,26 +463,100 @@ class _GreetingHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
+        AppSpacing.sm,
         AppSpacing.lg,
-        AppSpacing.lg,
-        0,
+        AppSpacing.md,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: const BoxDecoration(
+          gradient: AppColors.lagoonGradient,
+          borderRadius: AppRadius.brXl,
+          boxShadow: AppColors.softShadow,
+        ),
+        child: Stack(
+          children: [
+            const PositionedDirectional(
+              end: -45,
+              bottom: -74,
+              child: _DiscoveryRings(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$greeting $emoji  ·  ${Formatters.weekday(now)}'
+                        .toUpperCase(),
+                    style: text.labelSmall?.copyWith(
+                      color: AppColors.coralMist,
+                      letterSpacing: 0.9,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'اكتشف حائل',
+                    style: text.displaySmall?.copyWith(color: Colors.white),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'اختر ما يناسبك من دليل المدينة',
+                    style: text.bodyMedium?.copyWith(color: AppColors.cream),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    headline,
+                    style: text.titleSmall?.copyWith(color: Colors.white),
+                  ),
+                  if (stats.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      '$stats — added by travellers',
+                      style: text.bodySmall?.copyWith(color: AppColors.cream),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// An abstract map motif for the discovery banner.
+class _DiscoveryRings extends StatelessWidget {
+  const _DiscoveryRings();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: 182,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Text(
-            '$greeting $emoji  ·  ${Formatters.weekday(now)}'.toUpperCase(),
-            style: text.labelSmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-              letterSpacing: 1.2,
+          for (final diameter in [82.0, 116.0, 150.0, 182.0])
+            Container(
+              width: diameter,
+              height: diameter,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0x48F6DBC0)),
+              ),
+            ),
+          const Positioned(
+            top: 43,
+            left: 45,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.coralMist,
+              ),
+              child: SizedBox.square(dimension: 7),
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(headline, style: text.headlineMedium),
-          if (stats.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text('$stats — added by travellers', style: text.bodySmall),
-          ],
         ],
       ),
     );
@@ -501,8 +575,8 @@ class _PlanTripBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkInk : AppColors.ink;
-    final fg = isDark ? AppColors.darkBg : Colors.white;
+    final bg = isDark ? AppColors.darkSurfaceAlt : AppColors.teal;
+    const fg = Colors.white;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -620,9 +694,8 @@ class _ActiveFilterBar extends StatelessWidget {
                   emoji: countryFlag(filter.country),
                   label: filter.country,
                   // Removing the country also drops its city.
-                  onRemove: () => onFilter(
-                    filter.copyWith(country: '', city: ''),
-                  ),
+                  onRemove: () =>
+                      onFilter(filter.copyWith(country: '', city: '')),
                 ),
               if (filter.city.isNotEmpty)
                 _FilterPill(
@@ -864,14 +937,14 @@ class _CircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
     final button = DecoratedBox(
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: AppColors.softShadow,
       ),
       child: Material(
-        color: isDark ? AppColors.darkInk : AppColors.ink,
+        color: scheme.primary,
         shape: const CircleBorder(),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -881,11 +954,7 @@ class _CircleButton extends StatelessWidget {
             child: Badge(
               isLabelVisible: count > 0,
               label: Text('$count'),
-              child: Icon(
-                icon,
-                color: isDark ? AppColors.darkBg : Colors.white,
-                size: 22,
-              ),
+              child: Icon(icon, color: scheme.onPrimary, size: 22),
             ),
           ),
         ),
@@ -900,103 +969,119 @@ class _DalalCategorySections extends StatelessWidget {
   final Set<String> selected;
   final ValueChanged<String> onToggle;
 
-  const _DalalCategorySections({required this.selected, required this.onToggle});
+  const _DalalCategorySections({
+    required this.selected,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('اكتشف حائل', style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 4),
-          Text('اختر ما يناسبك من دليل المدينة', style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: AppSpacing.md),
-          for (final section in Categories.sections) ...[
-            Text(section, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: AppSpacing.lg),
+        for (final section in Categories.sections) ...[
+          Padding(
+            padding: AppSpacing.screenPadding,
+            child: Text(
+              section,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: AppSpacing.screenPadding,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 for (final category in Categories.inSection(section))
-                  FilterChip(
-                    selected: selected.contains(category.id),
-                    onSelected: (_) => onToggle(category.id),
-                    avatar: Icon(category.icon, size: 18, color: selected.contains(category.id) ? Colors.white : category.color),
-                    label: Text(category.label),
-                    selectedColor: category.color,
-                    checkmarkColor: Colors.white,
-                    labelStyle: TextStyle(color: selected.contains(category.id) ? Colors.white : null),
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      end: AppSpacing.sm,
+                    ),
+                    child: _CategoryTile(
+                      category: category,
+                      selected: selected.contains(category.id),
+                      onTap: () => onToggle(category.id),
+                    ),
                   ),
               ],
             ),
-            const SizedBox(height: AppSpacing.lg),
-          ],
+          ),
+          const SizedBox(height: AppSpacing.md),
         ],
-      ),
+      ],
     );
   }
 }
 
-class _CategoryStrip extends StatelessWidget {
-  final Set<String> selected;
-  final ValueChanged<String> onToggle;
-  const _CategoryStrip({required this.selected, required this.onToggle});
+class _CategoryTile extends StatelessWidget {
+  final SpotCategory category;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _CategoryTile({
+    required this.category,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // A–Z for travellers (the catalog order stays for admin / add-spot).
-    final categories = [...context.watch<CategoryStore>().enabled]
-      ..sort((a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
-    return SizedBox(
-      height: 92,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.sm,
-        ),
-        itemCount: categories.length,
-        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
-        itemBuilder: (_, i) {
-          final c = categories[i];
-          final isSelected = selected.contains(c.id);
-          final scheme = Theme.of(context).colorScheme;
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final selectedFill = isDark ? AppColors.darkInk : AppColors.ink;
-          final selectedIcon = isDark ? AppColors.darkBg : Colors.white;
-          return InkWell(
-            onTap: () => onToggle(c.id),
-            borderRadius: AppRadius.brLg,
-            child: Column(
-              children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? selectedFill
-                        : scheme.surfaceContainerHighest,
-                    borderRadius: AppRadius.brLg,
-                  ),
-                  child: Icon(
-                    c.icon,
-                    color: isSelected ? selectedIcon : c.color,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  c.label,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: isSelected ? FontWeight.w700 : null,
-                  ),
-                ),
-              ],
-            ),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final fill = selected
+        ? scheme.primary
+        : theme.brightness == Brightness.dark
+        ? scheme.surfaceContainerHighest
+        : Color.alphaBlend(
+            category.color.withValues(alpha: 0.09),
+            Colors.white,
           );
-        },
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: SizedBox(
+        width: 90,
+        child: Material(
+          color: fill,
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.brLg,
+            side: BorderSide(color: selected ? fill : scheme.outline),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.md,
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    selected ? Icons.check_rounded : category.icon,
+                    color: selected ? scheme.onPrimary : scheme.primary,
+                    size: 24,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    category.label,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: selected ? scheme.onPrimary : scheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

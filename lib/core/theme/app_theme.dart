@@ -4,7 +4,7 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// Assembles the light & dark [ThemeData] for SpotWise from the Lagoon palette.
+/// Assembles the light & dark [ThemeData] for Dalal from the Violet Dusk palette.
 class AppTheme {
   AppTheme._();
 
@@ -21,15 +21,13 @@ class AppTheme {
     final surfaceAlt = isDark ? AppColors.darkSurfaceAlt : AppColors.surfaceAlt;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
 
-    // Neutral, high-contrast primary control color (the reference "black" button).
-    // In dark mode it flips to near-white so the button stays visible.
-    final primaryBtn = isDark ? AppColors.darkInk : AppColors.ink;
+    final primaryBtn = isDark ? AppColors.coralMist : AppColors.teal;
     final onPrimaryBtn = isDark ? AppColors.darkBg : Colors.white;
 
     final colorScheme = ColorScheme(
       brightness: brightness,
-      primary: AppColors.teal,
-      onPrimary: Colors.white,
+      primary: primaryBtn,
+      onPrimary: onPrimaryBtn,
       primaryContainer: isDark ? AppColors.tealDark : AppColors.tealMist,
       onPrimaryContainer: isDark ? Colors.white : AppColors.tealDark,
       secondary: AppColors.coral,
@@ -115,7 +113,7 @@ class AppTheme {
         // Borderless at rest (the fill defines the field); teal ring on focus.
         border: inputBorder(Colors.transparent),
         enabledBorder: inputBorder(Colors.transparent),
-        focusedBorder: inputBorder(AppColors.teal, 1.6),
+        focusedBorder: inputBorder(primaryBtn, 1.6),
         errorBorder: inputBorder(AppColors.danger),
         focusedErrorBorder: inputBorder(AppColors.danger, 1.6),
         prefixIconColor: inkSoft,
@@ -159,7 +157,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.teal,
+          foregroundColor: primaryBtn,
           textStyle: textTheme.labelLarge,
         ),
       ),
@@ -296,9 +294,7 @@ class AppTheme {
           (s) => s.contains(WidgetState.selected) ? AppColors.teal : surfaceAlt,
         ),
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.teal,
-      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: primaryBtn),
       listTileTheme: ListTileThemeData(
         iconColor: inkSoft,
         titleTextStyle: textTheme.titleSmall,

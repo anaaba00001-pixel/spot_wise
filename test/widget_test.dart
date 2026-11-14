@@ -5,11 +5,21 @@ import 'package:spot_wise/models/spot.dart';
 import 'package:spot_wise/widgets/app_logo.dart';
 
 void main() {
-  testWidgets('AppLogo renders the wordmark', (tester) async {
+  testWidgets('AppLogo renders the Dalal wordmark and icon', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: Center(child: AppLogo()))),
+      const MaterialApp(
+        home: Scaffold(body: Center(child: AppLogo())),
+      ),
     );
-    expect(find.text('SpotWise'), findsOneWidget);
+    expect(find.text('دلال'), findsOneWidget);
+    expect(
+      tester.widget<Image>(find.byType(Image)).image,
+      isA<ResizeImage>().having(
+        (image) => (image.imageProvider as AssetImage).assetName,
+        'asset name',
+        'assets/dalal-app-icon.png',
+      ),
+    );
   });
 
   test('Spot round-trips through JSON', () {

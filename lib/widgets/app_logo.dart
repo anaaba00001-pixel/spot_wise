@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme/app_colors.dart';
-
-/// The SpotWise brand mark (a pin in a lagoon-gradient tile) with an optional
-/// wordmark. Used on the splash, auth and onboarding screens.
+/// The Dalal app icon with an optional wordmark.
 class AppLogo extends StatelessWidget {
   final double size;
   final bool showWordmark;
@@ -20,24 +17,16 @@ class AppLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mark = Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: AppColors.lagoonGradient,
-        borderRadius: BorderRadius.circular(size * 0.28),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.teal.withValues(alpha: 0.35),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Icon(
-        Icons.explore_rounded,
-        color: Colors.white,
-        size: size * 0.6,
+    final mark = ClipRRect(
+      borderRadius: BorderRadius.circular(size * 0.28),
+      child: Image.asset(
+        'assets/dalal-app-icon.png',
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
+        semanticLabel: showWordmark ? null : 'دلال',
+        excludeFromSemantics: showWordmark,
       ),
     );
 
