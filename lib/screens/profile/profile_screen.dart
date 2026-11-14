@@ -58,7 +58,9 @@ class ProfileScreen extends StatelessWidget {
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: AppSpacing.xs),
-                        Flexible(Text(user.email, style: text.bodySmall)),
+                        Flexible(
+                          child: Text(user.email, style: text.bodySmall),
+                        ),
                       ],
                     ),
                     Text(

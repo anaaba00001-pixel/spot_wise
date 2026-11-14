@@ -4,7 +4,6 @@ import 'package:latlong2/latlong.dart';
 import '../models/spot.dart';
 import '../models/spot_filter.dart';
 import '../services/location/geocoding_service.dart';
-import '../services/location/location_service.dart';
 import '../services/service_locator.dart';
 
 /// State for the discovery map: active filters, camera target, the user's
