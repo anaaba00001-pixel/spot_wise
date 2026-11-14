@@ -199,7 +199,6 @@ class _Header extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(user!.name, style: text.titleLarge),
-                    Text(user!.email, style: text.bodySmall),
                     const SizedBox(height: AppSpacing.sm),
                     Container(
                       padding: const EdgeInsets.symmetric(

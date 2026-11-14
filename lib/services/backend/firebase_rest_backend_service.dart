@@ -235,7 +235,7 @@ class FirebaseRestBackendService implements BackendService {
 
   @override
   Future<void> saveUser(AppUser user) =>
-      _put('users/${user.id}', user.toJson());
+      _put('users/${user.id}', user.toPublicJson());
 
   @override
   Future<void> deleteUser(String id) => _delete('users/$id');

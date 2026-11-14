@@ -70,8 +70,22 @@ class AppUser {
     'createdAt': createdAt.millisecondsSinceEpoch,
   };
 
+  /// Profile data that may be stored in a shared/public backend collection.
+  /// Authentication identifiers such as the email stay in the auth service.
+  Map<String, dynamic> toPublicJson() => {
+    'name': name,
+    'role': role.value,
+    'photoUrl': photoUrl,
+    'interests': interests,
+    'savedSpots': savedSpotIds,
+    'homeCity': homeCity,
+    'suspended': suspended,
+    'createdAt': createdAt.millisecondsSinceEpoch,
+  };
+
   AppUser copyWith({
     String? name,
+    String? email,
     UserRole? role,
     String? photoUrl,
     List<String>? interests,
@@ -83,7 +97,7 @@ class AppUser {
     return AppUser(
       id: id,
       name: name ?? this.name,
-      email: email,
+      email: email ?? this.email,
       role: role ?? this.role,
       photoUrl: photoUrl ?? this.photoUrl,
       interests: interests ?? this.interests,

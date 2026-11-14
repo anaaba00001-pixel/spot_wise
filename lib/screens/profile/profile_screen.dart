@@ -49,7 +49,24 @@ class ProfileScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(user.name, style: text.headlineSmall),
-                    Text(user.email, style: text.bodySmall),
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.lock_outline_rounded,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Flexible(Text(user.email, style: text.bodySmall)),
+                      ],
+                    ),
+                    Text(
+                      'خاص بك ولا يظهر للآخرين',
+                      style: text.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Pill(
                       label: user.role.label,

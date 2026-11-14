@@ -88,13 +88,17 @@ class FirebaseAuthRestService implements AuthService {
       'returnSecureToken': true,
     });
     final uid = data['localId'].toString();
-    var user = await backend.getUser(uid);
-    user ??= AppUser(
-      id: uid,
-      name: email.split('@').first,
-      email: email.trim(),
-      createdAt: DateTime.now(),
-    );
+    final profile = await backend.getUser(uid);
+    final user = profile?.copyWith(email: email.trim()) ??
+        AppUser(
+          id: uid,
+          name: email.split('@').first,
+          email: email.trim(),
+          createdAt: DateTime.now(),
+        );
+    // Re-save through the backend's privacy-safe serializer. This also removes
+    // email fields left in older public profile records after the next sign-in.
+    await backend.saveUser(user);
     await _persistSession(uid);
     _current = user;
     return user;
