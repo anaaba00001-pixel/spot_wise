@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart' as intl;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
@@ -8,10 +13,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/auth_gate.dart';
 import '../../core/utils/country_flags.dart';
-import '../../core/utils/formatters.dart';
 import '../../models/spot.dart';
 import '../../models/spot_filter.dart';
-import '../../providers/ai_planner_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/spots_provider.dart';
 import '../../widgets/app_logo.dart';
@@ -19,7 +22,6 @@ import '../../widgets/app_menu_button.dart';
 import '../../widgets/destination_picker_sheet.dart';
 import '../../widgets/location_picker_sheet.dart';
 import '../../widgets/max_width.dart';
-import '../../widgets/notification_bell.dart';
 import '../../widgets/offline_banner.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/skeletons.dart';
@@ -43,12 +45,6 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
   SpotFilter _filter = const SpotFilter();
   LatLng? _origin;
   String? _placeLabel;
-
-  void _toggleCategory(String categoryId) {
-    final ids = {..._filter.categoryIds};
-    ids.contains(categoryId) ? ids.remove(categoryId) : ids.add(categoryId);
-    setState(() => _filter = _filter.copyWith(categoryIds: ids));
-  }
 
   Future<void> _pickLocation() async {
     final picked = await pickLocation(context);
@@ -136,15 +132,28 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
     }
   }
 
-  /// Pre-fills the AI planner with the active destination and jumps to the
-  /// Plan tab.
-  void _planTrip() {
-    final hasCity = _filter.city.isNotEmpty;
-    context.read<AiPlannerProvider>().prefillDestination(
-      destination: hasCity ? _filter.city : _filter.country,
-      country: hasCity ? _filter.country : '',
-    );
-    context.read<HomeTab>().go(2);
+  HomeTab? _homeTab;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final tab = context.read<HomeTab>();
+    if (identical(tab, _homeTab)) return;
+    _homeTab?.removeListener(_applyCategory);
+    _homeTab = tab;
+    tab.addListener(_applyCategory);
+  }
+
+  void _applyCategory() {
+    final category = _homeTab?.takeCategory();
+    if (category == null) return;
+    setState(() => _filter = _filter.copyWith(categoryIds: {category}));
+  }
+
+  @override
+  void dispose() {
+    _homeTab?.removeListener(_applyCategory);
+    super.dispose();
   }
 
   @override
@@ -170,7 +179,6 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
             tooltip: 'Search spots',
             onPressed: _openSpotSearch,
           ),
-          const NotificationBell(),
           Center(
             child: Tooltip(
               message: auth.user != null ? 'Profile' : 'Sign in',
@@ -230,7 +238,6 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
       // or category.
       results.sort((a, b) => b.rating.compareTo(a.rating));
     }
-    final recommended = spotsP.recommendationsFor(auth.user, limit: 8);
     final featured = spotsP.featured;
 
     return ListView(
@@ -241,11 +248,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
       ),
       children: [
         const OfflineBanner(),
-        _GreetingHeader(
-          firstName: auth.user?.name.split(' ').first,
-          cityCount: spotsP.cities.length,
-          countryCount: spotsP.countryCounts.length,
-        ),
+        const _GreetingHeader(),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.lg,
@@ -297,13 +300,8 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
             onClearFilters: () => setState(() => _filter = const SpotFilter()),
             onClearLocation: _clearLocation,
           ),
-        _DalalCategorySections(
-          selected: _filter.categoryIds,
-          onToggle: _toggleCategory,
-        ),
         if (activeMode) ...[
           if (_filter.country.isNotEmpty) ...[
-            _PlanTripBanner(place: _destinationPlace, onTap: _planTrip),
             if (results.any((s) => s.featured)) ...[
               SectionHeader(
                 title: 'Featured in $_destinationPlace',
@@ -332,15 +330,6 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
               ),
             ),
         ] else ...[
-          if (recommended.isNotEmpty) ...[
-            SectionHeader(
-              title: 'Recommended for you',
-              subtitle: auth.user?.interests.isNotEmpty == true
-                  ? 'Based on ${auth.user!.interests.take(2).join(' & ').toLowerCase()}'
-                  : 'Top-rated places to start',
-            ),
-            _rail(context, recommended, auth),
-          ],
           SectionHeader(
             title: 'Explore spots',
             subtitle: '${spotsP.spots.length} community-approved places',
@@ -422,43 +411,65 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
 /// Editorial greeting block: time-of-day greeting + date, a headline that
 /// rotates daily, and a live stat line — replaces the old static app-bar
 /// "Hello, there" title.
-class _GreetingHeader extends StatelessWidget {
-  final String? firstName;
-  final int cityCount;
-  final int countryCount;
+class _GreetingHeader extends StatefulWidget {
+  const _GreetingHeader();
 
-  const _GreetingHeader({
-    required this.firstName,
-    required this.cityCount,
-    required this.countryCount,
-  });
+  @override
+  State<_GreetingHeader> createState() => _GreetingHeaderState();
+}
 
-  static const _prompts = [
-    'Where to next',
-    'Ready for an adventure',
-    'What will you discover',
-    'Somewhere new today',
-  ];
+class _GreetingHeaderState extends State<_GreetingHeader> {
+  late final Future<String?> _weather = _loadWeather();
+  static final _date = intl.DateFormat('EEEE، d MMMM', 'ar');
+  static final _number = intl.NumberFormat.decimalPattern('ar');
+
+  Future<String?> _loadWeather() async {
+    try {
+      final response = await http
+          .get(
+            Uri.https('api.open-meteo.com', '/v1/forecast', {
+              'latitude': '27.52',
+              'longitude': '41.69',
+              'current': 'temperature_2m,weather_code',
+              'daily': 'temperature_2m_max,temperature_2m_min',
+              'timezone': 'Asia/Riyadh',
+              'forecast_days': '1',
+            }),
+          )
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final current = data['current'] as Map<String, dynamic>;
+      final daily = data['daily'] as Map<String, dynamic>;
+      final temperature = (current['temperature_2m'] as num).round();
+      final code = current['weather_code'] as int;
+      final high = ((daily['temperature_2m_max'] as List).first as num).round();
+      final low = ((daily['temperature_2m_min'] as List).first as num).round();
+      final condition = switch (code) {
+        0 => 'صحو',
+        1 || 2 => 'غائم جزئيًا',
+        3 => 'غائم',
+        45 || 48 => 'ضباب',
+        51 || 53 || 55 || 56 || 57 => 'رذاذ',
+        61 || 63 || 65 || 66 || 67 || 80 || 81 || 82 => 'أمطار',
+        71 || 73 || 75 || 77 || 85 || 86 => 'ثلوج',
+        95 || 96 || 99 => 'عواصف رعدية',
+        _ => 'الحالة غير متاحة',
+      };
+      return '$condition · ${_number.format(temperature)}°م  |  العظمى ${_number.format(high)}°م · الصغرى ${_number.format(low)}°م';
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final now = DateTime.now();
-
-    final (greeting, emoji) = switch (now.hour) {
-      >= 5 && < 12 => ('Good morning', '☀️'),
-      >= 12 && < 17 => ('Good afternoon', '🌤️'),
-      _ => ('Good evening', '🌙'),
-    };
-    // Same prompt all day, a fresh one tomorrow.
-    final prompt =
-        _prompts[now.difference(DateTime(now.year)).inDays % _prompts.length];
-    final headline = firstName == null ? '$prompt?' : '$prompt, $firstName?';
-
-    final stats = [
-      if (cityCount > 0) '$cityCount cities',
-      if (countryCount > 0) '$countryCount countries',
-    ].join(' · ');
+    // Saudi Arabia uses UTC+3 year-round.
+    final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+    final greeting = now.hour >= 5 && now.hour < 12
+        ? 'صباح الخير'
+        : 'مساء الخير';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -487,8 +498,7 @@ class _GreetingHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$greeting $emoji  ·  ${Formatters.weekday(now)}'
-                        .toUpperCase(),
+                    '$greeting · ${_date.format(now)}',
                     style: text.labelSmall?.copyWith(
                       color: AppColors.coralMist,
                       letterSpacing: 0.9,
@@ -506,16 +516,35 @@ class _GreetingHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    headline,
+                    'طقس حائل اليوم',
                     style: text.titleSmall?.copyWith(color: Colors.white),
                   ),
-                  if (stats.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      '$stats — added by travellers',
-                      style: text.bodySmall?.copyWith(color: AppColors.cream),
+                  FutureBuilder<String?>(
+                    future: _weather,
+                    builder: (context, snapshot) {
+                      final forecast = snapshot.data;
+                      return Text(
+                        forecast ??
+                            (snapshot.connectionState == ConnectionState.done
+                                ? 'تعذّر جلب الطقس الآن'
+                                : 'جارٍ تحميل الطقس…'),
+                        style: text.bodyMedium?.copyWith(
+                          color: AppColors.cream,
+                        ),
+                      );
+                    },
+                  ),
+                  InkWell(
+                    onTap: () => launchUrl(Uri.https('open-meteo.com')),
+                    child: Text(
+                      'المصدر: أوبن ميتيو',
+                      style: text.bodySmall?.copyWith(
+                        color: AppColors.cream,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppColors.cream,
+                      ),
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),
@@ -565,74 +594,7 @@ class _DiscoveryRings extends StatelessWidget {
 
 /// Ink-filled call-to-action shown while browsing a destination: hands the
 /// place to the AI planner and switches to the Plan tab.
-class _PlanTripBanner extends StatelessWidget {
-  final String place;
-  final VoidCallback onTap;
 
-  const _PlanTripBanner({required this.place, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkSurfaceAlt : AppColors.teal;
-    const fg = Colors.white;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.xs,
-      ),
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          borderRadius: AppRadius.brCard,
-          boxShadow: AppColors.softShadow,
-        ),
-        child: Material(
-          color: bg,
-          borderRadius: AppRadius.brCard,
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Row(
-                children: [
-                  Icon(Icons.auto_awesome_rounded, color: fg, size: 24),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Plan a trip to $place',
-                          style: text.titleSmall?.copyWith(color: fg),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          'Let AI build a day-by-day itinerary',
-                          style: text.bodySmall?.copyWith(
-                            color: fg.withValues(alpha: 0.75),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right_rounded, color: fg),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Result count + one removable pill per active filter (and the active
 /// `Near <place>` location, which lives outside [SpotFilter]).
 class _ActiveFilterBar extends StatelessWidget {
   final int count;
@@ -962,6 +924,33 @@ class _CircleButton extends StatelessWidget {
     );
     if (tooltip == null) return button;
     return Tooltip(message: tooltip!, child: button);
+  }
+}
+
+class DalalCategoriesScreen extends StatelessWidget {
+  const DalalCategoriesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: const AppMenuButton(),
+        title: const Text('فئات دليل حائل'),
+      ),
+      body: MaxWidthBox(
+        child: ListView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.lg,
+          ),
+          children: [
+            _DalalCategorySections(
+              selected: const {},
+              onToggle: context.read<HomeTab>().browseCategory,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

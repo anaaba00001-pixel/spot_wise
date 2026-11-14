@@ -10,11 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/debouncer.dart';
 import '../../core/utils/formatters.dart';
-import '../../models/enums.dart';
-import '../../models/notification_item.dart';
 import '../../models/trip.dart';
-import '../../providers/auth_provider.dart';
-import '../../providers/notifications_provider.dart';
 import '../../providers/spots_provider.dart';
 import '../../providers/trips_provider.dart';
 import '../../widgets/app_button.dart';
@@ -61,24 +57,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     if (!ok || !mounted) return;
     await context.read<TripsProvider>().deleteTrip(widget.trip.id);
     if (mounted) Navigator.pop(context);
-  }
-
-  Future<void> _remind(Trip trip) async {
-    final user = context.read<AuthProvider>().user;
-    if (user == null) return;
-    await context.read<NotificationsProvider>().add(
-      NotificationItem(
-        id: '',
-        userId: user.id,
-        title: 'Trip reminder set',
-        body: 'We\'ll remind you about your ${trip.destination} trip.',
-        type: NotificationType.tripReminder,
-        createdAt: DateTime.now(),
-      ),
-    );
-    if (mounted) {
-      AppSnackbar.success(context, 'Reminder added to your notifications.');
-    }
   }
 
   void _openStop(TripStop stop) {
@@ -176,10 +154,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 icon: const GlassIconButton(icon: Icons.more_horiz_rounded),
                 onSelected: (v) {
                   if (v == 'delete') _delete();
-                  if (v == 'remind') _remind(trip);
                 },
                 itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'remind', child: Text('Set reminder')),
                   PopupMenuItem(value: 'delete', child: Text('Delete trip')),
                 ],
               ),

@@ -10,8 +10,6 @@ import 'backend/local_backend_service.dart';
 import 'location/geocoding_service.dart';
 import 'location/location_service.dart';
 import 'media/photo_service.dart';
-import 'notifications/local_notification_service.dart';
-import 'notifications/push_service.dart';
 
 /// Builds and holds the app's services, choosing the local mock or the real
 /// remote implementation per integration based on `.env` (via [AppConfig]).
@@ -29,8 +27,6 @@ class ServiceLocator {
   late final PhotoService photo;
   late final LocationService location;
   late final GeocodingService geocoding;
-  late final LocalNotificationService notifications;
-  late final PushService push;
 
   /// Kept as the concrete type so the UI can offer "reset demo data".
   LocalBackendService? _localBackend;
@@ -58,9 +54,6 @@ class ServiceLocator {
     photo = PhotoService();
     location = LocationService();
     geocoding = GeocodingService();
-    notifications = LocalNotificationService();
-    await notifications.init();
-    push = PushService(notifications);
 
     _initialized = true;
   }

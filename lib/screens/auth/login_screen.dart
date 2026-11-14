@@ -121,8 +121,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text('New to SpotWise?', style: text.bodyMedium),
                     TextButton(
-                      onPressed: () =>
-                          Navigator.pushNamed(context, AppRoutes.register),
+                      onPressed: () async {
+                        final registered = await Navigator.pushNamed(
+                          context,
+                          AppRoutes.register,
+                        );
+                        if (!context.mounted || registered != true) return;
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context, true);
+                        } else {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            AppRoutes.home,
+                            (_) => false,
+                          );
+                        }
+                      },
                       child: const Text('Create account'),
                     ),
                   ],
@@ -135,4 +149,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

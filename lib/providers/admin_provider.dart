@@ -3,14 +3,12 @@ import 'package:flutter/foundation.dart';
 import '../core/utils/error_handler.dart';
 import '../models/app_user.dart';
 import '../models/enums.dart';
-import '../models/notification_item.dart';
 import '../models/report.dart';
 import '../models/spot.dart';
 import '../services/service_locator.dart';
 
 /// The moderation workflow: the pending queue, approve / reject / verify / edit
-/// / delete, and the reports inbox. Every decision queues a notification to the
-/// submitter (card-free auto-notify).
+/// / delete, and the reports inbox.
 class AdminProvider extends ChangeNotifier {
   List<Spot> _pending = [];
   List<Spot> _allSpots = [];
@@ -97,13 +95,6 @@ class AdminProvider extends ChangeNotifier {
       approvedBy: services.auth.currentUser?.id,
     );
     await services.backend.updateSpot(updated);
-    await _notify(
-      spot.submittedBy,
-      NotificationType.spotApproved,
-      'Your spot was approved 🎉',
-      '"${spot.name}" is now live on SpotWise for everyone to discover.',
-      spotId: spot.id,
-    );
     _pending.removeWhere((s) => s.id == spot.id);
     notifyListeners();
   }
@@ -114,13 +105,6 @@ class AdminProvider extends ChangeNotifier {
       rejectionReason: reason,
     );
     await services.backend.updateSpot(updated);
-    await _notify(
-      spot.submittedBy,
-      NotificationType.spotRejected,
-      'Your spot needs changes',
-      '"${spot.name}" wasn\'t approved: $reason',
-      spotId: spot.id,
-    );
     _pending.removeWhere((s) => s.id == spot.id);
     notifyListeners();
   }
@@ -183,16 +167,6 @@ class AdminProvider extends ChangeNotifier {
     final updated = user.copyWith(role: role);
     await services.backend.saveUser(updated);
     _replaceUser(updated);
-    await _notify(
-      user.id,
-      NotificationType.system,
-      role == UserRole.admin
-          ? 'You\'re now an admin 🎉'
-          : 'Your role was updated',
-      role == UserRole.admin
-          ? 'You can now moderate spots and manage SpotWise.'
-          : 'Your account is now a standard Explorer.',
-    );
     notifyListeners();
   }
 
@@ -200,16 +174,6 @@ class AdminProvider extends ChangeNotifier {
     final updated = user.copyWith(suspended: !user.suspended);
     await services.backend.saveUser(updated);
     _replaceUser(updated);
-    await _notify(
-      user.id,
-      NotificationType.system,
-      updated.suspended
-          ? 'Your account was suspended'
-          : 'Your account was reinstated',
-      updated.suspended
-          ? 'You can\'t sign in until an admin reinstates your account.'
-          : 'Welcome back — you can sign in again.',
-    );
     notifyListeners();
   }
 
@@ -217,15 +181,6 @@ class AdminProvider extends ChangeNotifier {
     await services.backend.deleteUser(user.id);
     _users.removeWhere((u) => u.id == user.id);
     notifyListeners();
-  }
-
-  Future<void> notifyUser(AppUser user, String title, String body) =>
-      _notify(user.id, NotificationType.system, title, body);
-
-  Future<void> notifyAllUsers(String title, String body) async {
-    for (final u in _users) {
-      await _notify(u.id, NotificationType.system, title, body);
-    }
   }
 
   void _replaceUser(AppUser user) {
@@ -239,26 +194,5 @@ class AdminProvider extends ChangeNotifier {
     final i = _reports.indexWhere((r) => r.id == report.id);
     if (i >= 0) _reports[i] = updated;
     notifyListeners();
-  }
-
-  Future<void> _notify(
-    String userId,
-    NotificationType type,
-    String title,
-    String body, {
-    String? spotId,
-  }) async {
-    if (userId.isEmpty) return;
-    await services.backend.addNotification(
-      NotificationItem(
-        id: '',
-        userId: userId,
-        title: title,
-        body: body,
-        type: type,
-        spotId: spotId,
-        createdAt: DateTime.now(),
-      ),
-    );
   }
 }

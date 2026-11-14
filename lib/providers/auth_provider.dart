@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 
 import '../core/utils/error_handler.dart';
@@ -38,30 +36,11 @@ class AuthProvider extends ChangeNotifier {
     try {
       _user = await action();
       _setBusy(false);
-      unawaited(registerPushToken());
       return true;
     } catch (e) {
       _error = friendlyError(e);
       _setBusy(false);
       return false;
-    }
-  }
-
-  /// Saves this device's FCM token onto the signed-in user (so a server could
-  /// target them later). No-op on web/desktop or when nothing changed.
-  Future<void> registerPushToken() async {
-    final user = _user;
-    if (user == null) return;
-    final token = await services.push.currentToken();
-    if (token == null || token == user.fcmToken) return;
-    final updated = user.copyWith(fcmToken: token);
-    try {
-      await services.backend.saveUser(updated);
-      services.auth.cacheUser(updated);
-      _user = updated;
-      notifyListeners();
-    } catch (_) {
-      /* token sync is best-effort */
     }
   }
 

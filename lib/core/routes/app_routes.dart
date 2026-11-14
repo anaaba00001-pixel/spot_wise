@@ -34,9 +34,6 @@ class AppRoutes {
   static const String aiPlanner = '/ai-planner';
   static const String itineraryResult = '/itinerary';
 
-  // Notifications
-  static const String notifications = '/notifications';
-
   // Admin
   static const String adminDashboard = '/admin';
   static const String adminPending = '/admin/pending';

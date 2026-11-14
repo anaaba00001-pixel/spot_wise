@@ -13,7 +13,6 @@ import '../../screens/auth/register_screen.dart';
 import '../../screens/chat/chat_placeholder_screen.dart';
 import '../../screens/favorites/favorites_screen.dart';
 import '../../screens/integrations/integrations_screen.dart';
-import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/onboarding/onboarding_screen.dart';
 import '../../screens/admin/admin_spots_screen.dart';
 import '../../screens/admin/admin_users_screen.dart';
@@ -54,7 +53,6 @@ class AppRouter {
       AppRoutes.tripDetails => TripDetailsScreen(trip: args as Trip),
       AppRoutes.createTrip => CreateTripScreen(seedSpot: args as Spot?),
       AppRoutes.itineraryResult => ItineraryResultScreen(trip: args as Trip),
-      AppRoutes.notifications => const NotificationsScreen(),
       AppRoutes.adminDashboard => const AdminDashboardScreen(),
       AppRoutes.adminPending => const AdminPendingScreen(),
       AppRoutes.adminReports => const AdminReportsScreen(),

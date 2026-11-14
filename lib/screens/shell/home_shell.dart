@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,15 +5,10 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/auth_gate.dart';
-import '../../models/notification_item.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/spots_provider.dart';
 import '../../providers/trips_provider.dart';
-import '../../services/notifications/notification_stream.dart';
-import '../../services/service_locator.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/app_menu_button.dart';
-import '../ai/ai_planner_screen.dart';
 import '../home/home_feed_screen.dart';
 import '../map/map_screen.dart';
 import '../trips/trips_list_screen.dart';
@@ -22,11 +16,23 @@ import '../trips/trips_list_screen.dart';
 /// Lets any tab jump to another tab (e.g. "Explore the map" from home).
 class HomeTab extends ChangeNotifier {
   int index;
+  String? _pendingCategory;
   HomeTab(this.index);
   void go(int i) {
     if (i == index) return;
     index = i;
     notifyListeners();
+  }
+
+  void browseCategory(String category) {
+    _pendingCategory = category;
+    go(0);
+  }
+
+  String? takeCategory() {
+    final category = _pendingCategory;
+    _pendingCategory = null;
+    return category;
   }
 }
 
@@ -44,7 +50,7 @@ class _HomeShellState extends State<HomeShell> {
   static const _screens = [
     HomeFeedScreen(),
     MapScreen(),
-    AiPlannerScreen(),
+    DalalCategoriesScreen(),
     TripsListScreen(),
   ];
 
@@ -54,8 +60,6 @@ class _HomeShellState extends State<HomeShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SpotsProvider>().load();
       context.read<TripsProvider>().load();
-      context.read<AuthProvider>().registerPushToken();
-      if (!kIsWeb) services.notifications.requestPermission();
     });
   }
 
@@ -67,25 +71,17 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
-    final uid = context.select<AuthProvider, String?>((a) => a.user?.id);
-
     return ChangeNotifierProvider.value(
       value: _tab,
-      child: StreamProvider<List<NotificationItem>>(
-        create: (_) => uid == null
-            ? Stream.value(const <NotificationItem>[])
-            : watchNotifications(uid),
-        initialData: const [],
-        child: Consumer<HomeTab>(
-          builder: (context, tab, _) => Scaffold(
-            key: shellScaffoldKey,
-            drawer: const AppDrawer(),
-            extendBody: true,
-            body: IndexedStack(index: tab.index, children: _screens),
-            bottomNavigationBar: MediaQuery.viewInsetsOf(context).bottom > 0
-                ? null
-                : _FloatingDock(tab: tab, onAddSpot: _addSpot),
-          ),
+      child: Consumer<HomeTab>(
+        builder: (context, tab, _) => Scaffold(
+          key: shellScaffoldKey,
+          drawer: const AppDrawer(),
+          extendBody: true,
+          body: IndexedStack(index: tab.index, children: _screens),
+          bottomNavigationBar: MediaQuery.viewInsetsOf(context).bottom > 0
+              ? null
+              : _FloatingDock(tab: tab, onAddSpot: _addSpot),
         ),
       ),
     );
@@ -144,9 +140,9 @@ class _FloatingDock extends StatelessWidget {
                     _NavItem(
                       tab: tab,
                       index: 2,
-                      icon: Icons.auto_awesome_outlined,
-                      selectedIcon: Icons.auto_awesome_rounded,
-                      label: 'اقتراحات',
+                      icon: Icons.category_outlined,
+                      selectedIcon: Icons.category_rounded,
+                      label: 'الفئات',
                     ),
                     _NavItem(
                       tab: tab,

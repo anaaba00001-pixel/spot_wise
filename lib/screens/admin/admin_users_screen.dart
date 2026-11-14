@@ -29,7 +29,7 @@ enum _UserSegment {
 }
 
 /// Admin user management: search users, promote/demote admins, suspend,
-/// delete, and send notifications (to one user or broadcast to everyone).
+/// and delete.
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
 
@@ -66,15 +66,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     }
   }
 
-  Future<void> _notify(AppUser u) async {
-    final msg = await _composeNotification(context, target: u.name);
-    if (msg == null || !mounted) return;
-    await context.read<AdminProvider>().notifyUser(u, msg.$1, msg.$2);
-    if (mounted) {
-      AppSnackbar.success(context, 'Notification sent to ${u.name}.');
-    }
-  }
-
   Future<void> _delete(AppUser u) async {
     final ok = await showConfirmSheet(
       context,
@@ -87,22 +78,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     if (!ok || !mounted) return;
     await context.read<AdminProvider>().deleteUser(u);
     if (mounted) AppSnackbar.show(context, '${u.name} deleted.');
-  }
-
-  Future<void> _notifyAll() async {
-    final adminP = context.read<AdminProvider>();
-    final msg = await _composeNotification(
-      context,
-      target: 'all ${adminP.userCount} users',
-    );
-    if (msg == null || !mounted) return;
-    await adminP.notifyAllUsers(msg.$1, msg.$2);
-    if (mounted) {
-      AppSnackbar.success(
-        context,
-        'Broadcast sent to ${adminP.userCount} users.',
-      );
-    }
   }
 
   @override
@@ -119,16 +94,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage users'),
-        actions: [
-          IconButton(
-            tooltip: 'Notify all users',
-            icon: const Icon(Icons.campaign_outlined),
-            onPressed: adminP.users.isEmpty ? null : _notifyAll,
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Manage users')),
       body: Column(
         children: [
           Padding(
@@ -201,7 +167,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           onMakeAdmin: () => _setRole(u, UserRole.admin),
                           onMakeExplorer: () => _setRole(u, UserRole.user),
                           onToggleSuspend: () => _toggleSuspend(u),
-                          onNotify: () => _notify(u),
                           onDelete: () => _delete(u),
                         );
                       },
@@ -214,60 +179,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   }
 }
 
-/// Title + message composer dialog. Returns (title, body) or null if cancelled.
-Future<(String, String)?> _composeNotification(
-  BuildContext context, {
-  required String target,
-}) {
-  final titleC = TextEditingController();
-  final bodyC = TextEditingController();
-  return showDialog<(String, String)>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text('Notify $target'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: titleC,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(labelText: 'Title'),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextField(
-            controller: bodyC,
-            maxLines: 3,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(labelText: 'Message'),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            final t = titleC.text.trim();
-            final b = bodyC.text.trim();
-            if (t.isEmpty || b.isEmpty) return;
-            Navigator.pop(ctx, (t, b));
-          },
-          child: const Text('Send'),
-        ),
-      ],
-    ),
-  );
-}
-
 class _UserCard extends StatelessWidget {
   final AppUser user;
   final bool isSelf;
   final VoidCallback onMakeAdmin;
   final VoidCallback onMakeExplorer;
   final VoidCallback onToggleSuspend;
-  final VoidCallback onNotify;
   final VoidCallback onDelete;
 
   const _UserCard({
@@ -276,7 +193,6 @@ class _UserCard extends StatelessWidget {
     required this.onMakeAdmin,
     required this.onMakeExplorer,
     required this.onToggleSuspend,
-    required this.onNotify,
     required this.onDelete,
   });
 
@@ -367,8 +283,6 @@ class _UserCard extends StatelessWidget {
                       onMakeExplorer();
                     case 'suspend':
                       onToggleSuspend();
-                    case 'notify':
-                      onNotify();
                     case 'delete':
                       onDelete();
                   }
@@ -387,10 +301,6 @@ class _UserCard extends StatelessWidget {
                   PopupMenuItem(
                     value: 'suspend',
                     child: Text(user.suspended ? 'Reinstate' : 'Suspend'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'notify',
-                    child: Text('Send notification'),
                   ),
                   const PopupMenuItem(value: 'delete', child: Text('Delete')),
                 ],
