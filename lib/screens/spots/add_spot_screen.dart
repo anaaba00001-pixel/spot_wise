@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/constants/categories.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/error_handler.dart';
@@ -295,9 +296,22 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = context.watch<CategoryStore>().enabled;
-    if (_categoryId.isEmpty && categories.isNotEmpty) {
-      _categoryId = categories.first.id;
+    final enabledIds = categories.map((category) => category.id).toSet();
+    final roots = Categories.roots
+        .where((category) => enabledIds.contains(category.id))
+        .toList();
+    if (_categoryId.isEmpty && roots.isNotEmpty) {
+      _categoryId = roots.first.id;
     }
+    final currentCategory = Categories.byId(_categoryId);
+    final rootCategoryId = currentCategory.parentId ?? currentCategory.id;
+    final children = Categories.childrenOf(
+      rootCategoryId,
+    ).where((category) => enabledIds.contains(category.id)).toList();
+    final selectedChildId = currentCategory.parentId == rootCategoryId &&
+            enabledIds.contains(currentCategory.id)
+        ? currentCategory.id
+        : null;
     final text = Theme.of(context).textTheme;
     final isAdmin = context.watch<AuthProvider>().user?.isAdmin ?? false;
 
@@ -359,10 +373,13 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             DropdownButtonFormField<String>(
-              initialValue: _categoryId.isEmpty ? null : _categoryId,
-              decoration: const InputDecoration(labelText: 'Category'),
+              key: ValueKey('root-$rootCategoryId'),
+              initialValue: roots.any((c) => c.id == rootCategoryId)
+                  ? rootCategoryId
+                  : null,
+              decoration: const InputDecoration(labelText: 'الفئة الرئيسية'),
               items: [
-                for (final c in categories)
+                for (final c in roots)
                   DropdownMenuItem(
                     value: c.id,
                     child: Row(
@@ -374,8 +391,41 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
                     ),
                   ),
               ],
-              onChanged: (v) => setState(() => _categoryId = v ?? _categoryId),
+              onChanged: (value) {
+                if (value != null) setState(() => _categoryId = value);
+              },
             ),
+            if (children.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.lg),
+              DropdownButtonFormField<String>(
+                key: ValueKey('child-$rootCategoryId-$selectedChildId'),
+                initialValue: selectedChildId,
+                decoration: const InputDecoration(
+                  labelText: 'الفئة الفرعية',
+                  hintText: 'اختياري — حفظ ضمن الفئة العامة',
+                ),
+                items: [
+                  const DropdownMenuItem<String>(
+                    value: null,
+                    child: Text('تصنيف عام'),
+                  ),
+                  for (final child in children)
+                    DropdownMenuItem(
+                      value: child.id,
+                      child: Row(
+                        children: [
+                          Icon(child.icon, size: 18, color: child.color),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(child.label),
+                        ],
+                      ),
+                    ),
+                ],
+                onChanged: (value) => setState(
+                  () => _categoryId = value ?? rootCategoryId,
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.xl),
             Text('Location', style: text.labelLarge),
             const SizedBox(height: AppSpacing.sm),

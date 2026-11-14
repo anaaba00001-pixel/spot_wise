@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/constants/categories.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/enums.dart';
@@ -27,13 +28,90 @@ class FilterSheet extends StatefulWidget {
   State<FilterSheet> createState() => _FilterSheetState();
 }
 
+class _CategoryFilterGroup extends StatelessWidget {
+  final SpotCategory category;
+  final List<SpotCategory> children;
+  final Set<String> selected;
+  final ValueChanged<String> onToggle;
+
+  const _CategoryFilterGroup({
+    required this.category,
+    required this.children,
+    required this.selected,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (children.isEmpty) {
+      return Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: FilterChip(
+          avatar: Icon(category.icon, size: 18, color: category.color),
+          label: Text(category.label),
+          selected: selected.contains(category.id),
+          onSelected: (_) => onToggle(category.id),
+        ),
+      );
+    }
+    final hasSelection = selected.contains(category.id) ||
+        children.any((child) => selected.contains(child.id));
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      initiallyExpanded: hasSelection,
+      leading: Icon(category.icon, color: category.color),
+      title: Text(category.label),
+      trailing: Badge(
+        isLabelVisible: hasSelection,
+        label: Text(
+          '${selected.where((id) => id == category.id || children.any((c) => c.id == id)).length}',
+        ),
+        child: const Icon(Icons.expand_more_rounded),
+      ),
+      children: [
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
+            children: [
+              FilterChip(
+                label: Text('كل ${category.label}'),
+                selected: selected.contains(category.id),
+                onSelected: (_) => onToggle(category.id),
+              ),
+              for (final child in children)
+                FilterChip(
+                  label: Text(child.label),
+                  selected: selected.contains(child.id),
+                  onSelected: (_) => onToggle(child.id),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _FilterSheetState extends State<FilterSheet> {
   late SpotFilter _f = widget.initial;
+
+  void _toggleCategory(String id) {
+    final ids = {..._f.categoryIds};
+    ids.contains(id) ? ids.remove(id) : ids.add(id);
+    setState(() => _f = _f.copyWith(categoryIds: ids));
+  }
 
   @override
   Widget build(BuildContext context) {
     // A–Z for travellers (the catalog order stays for admin / add-spot).
-    final categories = [...context.read<CategoryStore>().enabled]
+    final store = context.watch<CategoryStore>();
+    final enabledIds = store.enabled.map((category) => category.id).toSet();
+    final categories = Categories.roots
+        .where((category) => enabledIds.contains(category.id))
+        .toList()
       ..sort((a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
     final text = Theme.of(context).textTheme;
 
@@ -69,34 +147,15 @@ class _FilterSheetState extends State<FilterSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _label('Category'),
-                      Wrap(
-                        spacing: AppSpacing.sm,
-                        runSpacing: AppSpacing.xs,
-                        children: [
-                          for (final c in categories)
-                            FilterChip(
-                              avatar: Icon(
-                                c.icon,
-                                size: 18,
-                                color: _f.categoryIds.contains(c.id)
-                                    ? (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? AppColors.darkBg
-                                          : Colors.white)
-                                    : c.color,
-                              ),
-                              label: Text(c.label),
-                              selected: _f.categoryIds.contains(c.id),
-                              onSelected: (_) => setState(() {
-                                final ids = {..._f.categoryIds};
-                                ids.contains(c.id)
-                                    ? ids.remove(c.id)
-                                    : ids.add(c.id);
-                                _f = _f.copyWith(categoryIds: ids);
-                              }),
-                            ),
-                        ],
-                      ),
+                      for (final category in categories)
+                        _CategoryFilterGroup(
+                          category: category,
+                          children: Categories.childrenOf(category.id)
+                              .where((child) => enabledIds.contains(child.id))
+                              .toList(),
+                          selected: _f.categoryIds,
+                          onToggle: _toggleCategory,
+                        ),
                       _label('Minimum rating'),
                       Row(
                         children: [

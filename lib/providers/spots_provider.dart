@@ -128,8 +128,13 @@ class SpotsProvider extends ChangeNotifier {
     return entries;
   }
 
-  List<Spot> byCategory(String categoryId) =>
-      _spots.where((s) => s.categoryId == categoryId).toList();
+  List<Spot> byCategory(String categoryId) {
+    final accepted = {
+      categoryId,
+      ...Categories.childrenOf(categoryId).map((category) => category.id),
+    };
+    return _spots.where((spot) => accepted.contains(spot.categoryId)).toList();
+  }
 
   List<Spot> recommendationsFor(AppUser? user, {int limit = 8}) {
     final interests = (user?.interests ?? const [])

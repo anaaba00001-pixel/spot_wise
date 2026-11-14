@@ -1,5 +1,6 @@
 import 'package:latlong2/latlong.dart';
 
+import '../core/constants/categories.dart';
 import 'enums.dart';
 import 'spot.dart';
 
@@ -74,8 +75,15 @@ class SpotFilter {
     // Case-insensitive: user-submitted spots may type "germany".
     if (country.isNotEmpty && !_sameName(spot.country, country)) return false;
     if (city.isNotEmpty && !_sameName(spot.city, city)) return false;
-    if (categoryIds.isNotEmpty && !categoryIds.contains(spot.categoryId)) {
-      return false;
+    if (categoryIds.isNotEmpty) {
+      final matchesCategory = categoryIds.any(
+        (id) =>
+            id == spot.categoryId ||
+            Categories.childrenOf(id).any(
+              (child) => child.id == spot.categoryId,
+            ),
+      );
+      if (!matchesCategory) return false;
     }
     if (spot.rating < minRating) return false;
     if (priceRanges.isNotEmpty && !priceRanges.contains(spot.priceRange)) {

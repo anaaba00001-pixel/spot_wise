@@ -16,6 +16,7 @@ import '../../core/utils/country_flags.dart';
 import '../../models/spot.dart';
 import '../../models/spot_filter.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/category_store.dart';
 import '../../providers/spots_provider.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/app_menu_button.dart';
@@ -1028,9 +1029,62 @@ class _DalalCategorySections extends StatelessWidget {
     required this.onToggle,
   });
 
+  Future<void> _selectCategory(
+    BuildContext context,
+    SpotCategory category,
+    CategoryStore store,
+  ) async {
+    final children = Categories.childrenOf(
+      category.id,
+    ).where((child) => store.isEnabled(child.id)).toList();
+    if (children.isEmpty) {
+      onToggle(category.id);
+      return;
+    }
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (context) => ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.sm,
+            ),
+            child: Text(
+              category.label,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          ListTile(
+            leading: Icon(category.icon, color: category.color),
+            title: Text('كل ${category.label}'),
+            subtitle: const Text('عرض جميع الفئات الفرعية'),
+            onTap: () => Navigator.pop(context, category.id),
+          ),
+          const Divider(),
+          for (final child in children)
+            ListTile(
+              leading: Icon(child.icon, color: child.color),
+              title: Text(child.label),
+              trailing: const Icon(Icons.chevron_left_rounded),
+              onTap: () => Navigator.pop(context, child.id),
+            ),
+        ],
+      ),
+    );
+    if (choice != null) onToggle(choice);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final store = context.watch<CategoryStore>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1052,8 +1106,11 @@ class _DalalCategorySections extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (final entry
-                    in Categories.inSection(section).asMap().entries)
+                for (final entry in Categories.rootsInSection(section)
+                    .where((category) => store.isEnabled(category.id))
+                    .toList()
+                    .asMap()
+                    .entries)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(
                       end: AppSpacing.sm,
@@ -1062,7 +1119,14 @@ class _DalalCategorySections extends StatelessWidget {
                       category: entry.value,
                       index: entry.key,
                       selected: selected.contains(entry.value.id),
-                      onTap: () => onToggle(entry.value.id),
+                      hasChildren: Categories.childrenOf(
+                        entry.value.id,
+                      ).any((child) => store.isEnabled(child.id)),
+                      onTap: () => _selectCategory(
+                        context,
+                        entry.value,
+                        store,
+                      ),
                     ),
                   ),
               ],
@@ -1079,12 +1143,14 @@ class _CategoryTile extends StatefulWidget {
   final SpotCategory category;
   final int index;
   final bool selected;
+  final bool hasChildren;
   final VoidCallback onTap;
 
   const _CategoryTile({
     required this.category,
     required this.index,
     required this.selected,
+    this.hasChildren = false,
     required this.onTap,
   });
 
@@ -1239,6 +1305,18 @@ class _CategoryTileState extends State<_CategoryTile>
                           ),
                         ),
                       ),
+                      if (widget.hasChildren)
+                        PositionedDirectional(
+                          top: 9,
+                          start: 9,
+                          child: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 17,
+                            color: selected
+                                ? Colors.white
+                                : AppColors.inkSoft,
+                          ),
+                        ),
                     ],
                   ),
                 ),

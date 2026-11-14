@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spot_wise/models/enums.dart';
 import 'package:spot_wise/models/spot.dart';
+import 'package:spot_wise/models/spot_filter.dart';
 import 'package:spot_wise/widgets/app_logo.dart';
 
 void main() {
@@ -45,5 +46,29 @@ void main() {
     expect(restored.priceRange, PriceRange.budget);
     expect(restored.status, SpotStatus.approved);
     expect(restored.lat, 30.0);
+  });
+
+  test('parent category includes spots saved in a child category', () {
+    final spot = Spot(
+      id: 'shawarma-1',
+      name: 'Shawarma',
+      description: 'A child-category restaurant',
+      country: 'Saudi Arabia',
+      city: 'Hail',
+      categoryId: 'restaurant_shawarma',
+      lat: 27.5,
+      lng: 41.7,
+      submittedBy: 'u1',
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    expect(
+      const SpotFilter(categoryIds: {'restaurant'}).matches(spot),
+      isTrue,
+    );
+    expect(
+      const SpotFilter(categoryIds: {'restaurant_burger'}).matches(spot),
+      isFalse,
+    );
   });
 }
