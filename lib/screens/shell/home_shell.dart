@@ -148,14 +148,14 @@ class _FloatingDock extends StatelessWidget {
                         index: 0,
                         icon: Icons.home_outlined,
                         selectedIcon: Icons.home_rounded,
-                        label: 'Home',
+                        label: 'الرئيسية',
                       ),
                       _NavItem(
                         tab: tab,
                         index: 1,
                         icon: Icons.map_outlined,
                         selectedIcon: Icons.map_rounded,
-                        label: 'Map',
+                        label: 'الخريطة',
                       ),
                       _DockAddButton(onTap: onAddSpot),
                       _NavItem(
@@ -163,14 +163,14 @@ class _FloatingDock extends StatelessWidget {
                         index: 2,
                         icon: Icons.auto_awesome_outlined,
                         selectedIcon: Icons.auto_awesome_rounded,
-                        label: 'Plan',
+                        label: 'اقتراحات',
                       ),
                       _NavItem(
                         tab: tab,
                         index: 3,
                         icon: Icons.luggage_outlined,
                         selectedIcon: Icons.luggage_rounded,
-                        label: 'Trips',
+                        label: 'المفضلة',
                       ),
                     ],
                   ),
@@ -197,7 +197,7 @@ class _DockAddButton extends StatelessWidget {
       width: 64,
       child: Center(
         child: Tooltip(
-          message: 'Add a spot',
+          message: 'إضافة مكان',
           child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,

@@ -20,6 +20,11 @@ class SpotWiseApp extends StatelessWidget {
     return MaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
+      locale: const Locale('ar', 'SA'),
+      builder: (context, child) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: child ?? const SizedBox.shrink(),
+      ),
       navigatorKey: navigatorKey,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

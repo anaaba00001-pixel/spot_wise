@@ -47,6 +47,13 @@ class _SpotDetailsView extends StatelessWidget {
     }
   }
 
+  Future<void> _launch(String value) async {
+    final uri = Uri.parse(value);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   Future<void> _toggleSave(BuildContext context, String spotId) async {
     if (await ensureLoggedIn(context) && context.mounted) {
       context.read<AuthProvider>().toggleSave(spotId);
@@ -191,6 +198,30 @@ class _SpotDetailsView extends StatelessWidget {
                       label: 'Best time',
                       value: spot.bestTimeToVisit,
                     ),
+                  ],
+                  if (spot.address.isNotEmpty)
+                    _InfoRow(icon: Icons.location_on_outlined, label: 'العنوان', value: spot.address),
+                  if (spot.openingHours.isNotEmpty)
+                    _InfoRow(icon: Icons.schedule_rounded, label: 'أوقات العمل', value: spot.openingHours),
+                  if (spot.eventDate.isNotEmpty)
+                    _InfoRow(icon: Icons.event_rounded, label: 'الموعد', value: spot.eventDate),
+                  if (spot.priceInfo.isNotEmpty)
+                    _InfoRow(icon: Icons.payments_outlined, label: 'السعر', value: spot.priceInfo),
+                  if (spot.products.isNotEmpty)
+                    _InfoRow(icon: Icons.inventory_2_outlined, label: 'المنتجات', value: spot.products),
+                  if (spot.seasons.isNotEmpty)
+                    _InfoRow(icon: Icons.calendar_month_outlined, label: 'المواسم', value: spot.seasons),
+                  if (spot.bookingInfo.isNotEmpty)
+                    _InfoRow(icon: Icons.app_registration_rounded, label: 'التسجيل أو الطلب', value: spot.bookingInfo),
+                  if (spot.trailDistanceKm > 0)
+                    _InfoRow(icon: Icons.route_rounded, label: 'المسار', value: '${spot.trailDistanceKm} كم · نحو ${spot.trailDurationMinutes} دقيقة'),
+                  if (spot.phone.isNotEmpty || spot.whatsappUrl.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    Row(children: [
+                      if (spot.phone.isNotEmpty) Expanded(child: AppButton('اتصال', icon: Icons.call_rounded, onPressed: () => _launch('tel:${spot.phone}'))),
+                      if (spot.phone.isNotEmpty && spot.whatsappUrl.isNotEmpty) const SizedBox(width: AppSpacing.sm),
+                      if (spot.whatsappUrl.isNotEmpty) Expanded(child: AppButton.outline('واتساب', icon: Icons.chat_rounded, onPressed: () => _launch(spot.whatsappUrl))),
+                    ]),
                   ],
                   const SizedBox(height: AppSpacing.lg),
                   Text(

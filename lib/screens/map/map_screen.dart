@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/routes/app_routes.dart';
@@ -355,6 +356,24 @@ class _SelectedCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
                   onPressed: onClose,
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.pushNamed(context, AppRoutes.spotDetails, arguments: spot),
+                    child: const Text('عرض التفاصيل'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => launchUrl(Uri.parse('${AppConfig.googleMapsDir}${spot.lat},${spot.lng}'), mode: LaunchMode.externalApplication),
+                    icon: const Icon(Icons.directions_rounded),
+                    label: const Text('الاتجاهات'),
+                  ),
                 ),
               ],
             ),

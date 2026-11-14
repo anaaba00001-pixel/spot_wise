@@ -11,8 +11,8 @@ import '../services/service_locator.dart';
 /// location and the city-search results.
 class MapProvider extends ChangeNotifier {
   SpotFilter _filter = const SpotFilter();
-  LatLng _center = LocationService.fallbackCenter;
-  double _zoom = 11.5;
+  LatLng _center = const LatLng(27.5114, 41.7208);
+  double _zoom = 11.8;
   String? _selectedSpotId;
   LatLng? _userLocation;
   bool _locating = false;

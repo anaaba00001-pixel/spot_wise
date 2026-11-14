@@ -40,6 +40,15 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
   final _bestTime = TextEditingController();
   final _tags = TextEditingController();
   final _locationNote = TextEditingController();
+  final _address = TextEditingController();
+  final _openingHours = TextEditingController();
+  final _phone = TextEditingController();
+  final _whatsapp = TextEditingController();
+  final _products = TextEditingController();
+  final _seasons = TextEditingController();
+  final _booking = TextEditingController();
+  final _eventDate = TextEditingController();
+  final _priceInfo = TextEditingController();
   final _cityFocus = FocusNode();
   final _countryFocus = FocusNode();
 
@@ -73,6 +82,15 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
       _bestTime.text = s.bestTimeToVisit;
       _tags.text = s.tags.join(', ');
       _locationNote.text = s.locationNote;
+      _address.text = s.address;
+      _openingHours.text = s.openingHours;
+      _phone.text = s.phone;
+      _whatsapp.text = s.whatsappUrl;
+      _products.text = s.products;
+      _seasons.text = s.seasons;
+      _booking.text = s.bookingInfo;
+      _eventDate.text = s.eventDate;
+      _priceInfo.text = s.priceInfo;
       _categoryId = s.categoryId;
       _price = s.priceRange;
       _isFree = s.isFree;
@@ -96,6 +114,15 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
     _bestTime.dispose();
     _tags.dispose();
     _locationNote.dispose();
+    _address.dispose();
+    _openingHours.dispose();
+    _phone.dispose();
+    _whatsapp.dispose();
+    _products.dispose();
+    _seasons.dispose();
+    _booking.dispose();
+    _eventDate.dispose();
+    _priceInfo.dispose();
     _cityFocus.dispose();
     _countryFocus.dispose();
     super.dispose();
@@ -197,6 +224,15 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
           hiddenGem: _hiddenGem,
           bestTimeToVisit: _bestTime.text.trim(),
           locationNote: _locationNote.text.trim(),
+          address: _address.text.trim(),
+          openingHours: _openingHours.text.trim(),
+          phone: _phone.text.trim(),
+          whatsappUrl: _whatsapp.text.trim(),
+          products: _products.text.trim(),
+          seasons: _seasons.text.trim(),
+          bookingInfo: _booking.text.trim(),
+          eventDate: _eventDate.text.trim(),
+          priceInfo: _priceInfo.text.trim(),
           tags: tags,
           // Admins can also move status / verified / featured.
           status: isAdmin ? _status : null,
@@ -225,6 +261,15 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
           hiddenGem: _hiddenGem,
           bestTimeToVisit: _bestTime.text.trim(),
           locationNote: _locationNote.text.trim(),
+          address: _address.text.trim(),
+          openingHours: _openingHours.text.trim(),
+          phone: _phone.text.trim(),
+          whatsappUrl: _whatsapp.text.trim(),
+          products: _products.text.trim(),
+          seasons: _seasons.text.trim(),
+          bookingInfo: _booking.text.trim(),
+          eventDate: _eventDate.text.trim(),
+          priceInfo: _priceInfo.text.trim(),
           tags: tags,
           status: SpotStatus.pending,
           verified: false,
@@ -403,6 +448,28 @@ class _AddSpotScreenState extends State<AddSpotScreen> {
               label: 'How to find it (optional)',
               hint: 'e.g. Behind the blue gate, ask for Abu Karim',
             ),
+            const SizedBox(height: AppSpacing.lg),
+            Text('بيانات دليل حائل', style: text.labelLarge),
+            const SizedBox(height: AppSpacing.sm),
+            AppTextField(controller: _address, label: 'العنوان'),
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(controller: _openingHours, label: 'أوقات العمل'),
+            const SizedBox(height: AppSpacing.md),
+            Row(children: [
+              Expanded(child: AppTextField(controller: _phone, label: 'رقم التواصل')),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(child: AppTextField(controller: _whatsapp, label: 'رابط واتساب الرسمي')),
+            ]),
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(controller: _eventDate, label: 'موعد الورشة أو النشاط'),
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(controller: _priceInfo, label: 'السعر'),
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(controller: _booking, label: 'طريقة التسجيل أو الطلب'),
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(controller: _products, label: 'المنتجات (للمزارع والمشاريع)'),
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(controller: _seasons, label: 'المواسم'),
             const SizedBox(height: AppSpacing.xl),
             Text('Details', style: text.labelLarge),
             const SizedBox(height: AppSpacing.sm),

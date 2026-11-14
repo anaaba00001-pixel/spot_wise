@@ -1,11 +1,11 @@
 {
-    "name": "SpotWise",
-    "short_name": "SpotWise",
+    "name": "دلال | دليل حائل",
+    "short_name": "دلال",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#F7F7F5",
-    "theme_color": "#0E7C7B",
-    "description": "Discover community-shared travel spots, explore them on a map, save & review them, plan trips, and get AI-built itineraries.",
+    "background_color": "#F7F3FA",
+    "theme_color": "#4B236E",
+    "description": "دلال، دليلك لاكتشاف أماكن حائل وأنشطتها وخدماتها.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

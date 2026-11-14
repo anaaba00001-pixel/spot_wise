@@ -24,6 +24,17 @@ class Spot {
   final bool featured;
   final String bestTimeToVisit;
   final String locationNote;
+  final String address;
+  final String openingHours;
+  final String phone;
+  final String whatsappUrl;
+  final String products;
+  final String seasons;
+  final String bookingInfo;
+  final String eventDate;
+  final String priceInfo;
+  final double trailDistanceKm;
+  final int trailDurationMinutes;
   final List<String> tags;
   final SpotStatus status;
   final bool verified;
@@ -54,6 +65,17 @@ class Spot {
     this.featured = false,
     this.bestTimeToVisit = '',
     this.locationNote = '',
+    this.address = '',
+    this.openingHours = '',
+    this.phone = '',
+    this.whatsappUrl = '',
+    this.products = '',
+    this.seasons = '',
+    this.bookingInfo = '',
+    this.eventDate = '',
+    this.priceInfo = '',
+    this.trailDistanceKm = 0,
+    this.trailDurationMinutes = 0,
     this.tags = const [],
     this.status = SpotStatus.pending,
     this.verified = false,
@@ -92,6 +114,17 @@ class Spot {
       featured: JsonUtils.asBool(json['featured']),
       bestTimeToVisit: JsonUtils.asString(json['bestTimeToVisit']),
       locationNote: JsonUtils.asString(json['locationNote']),
+      address: JsonUtils.asString(json['address']),
+      openingHours: JsonUtils.asString(json['openingHours']),
+      phone: JsonUtils.asString(json['phone']),
+      whatsappUrl: JsonUtils.asString(json['whatsappUrl']),
+      products: JsonUtils.asString(json['products']),
+      seasons: JsonUtils.asString(json['seasons']),
+      bookingInfo: JsonUtils.asString(json['bookingInfo']),
+      eventDate: JsonUtils.asString(json['eventDate']),
+      priceInfo: JsonUtils.asString(json['priceInfo']),
+      trailDistanceKm: JsonUtils.asDouble(json['trailDistanceKm']),
+      trailDurationMinutes: JsonUtils.asInt(json['trailDurationMinutes']),
       tags: JsonUtils.asStringList(json['tags']),
       status: SpotStatus.fromString(JsonUtils.asStringOrNull(json['status'])),
       verified: JsonUtils.asBool(json['verified']),
@@ -123,6 +156,17 @@ class Spot {
     'featured': featured,
     'bestTimeToVisit': bestTimeToVisit,
     'locationNote': locationNote,
+    'address': address,
+    'openingHours': openingHours,
+    'phone': phone,
+    'whatsappUrl': whatsappUrl,
+    'products': products,
+    'seasons': seasons,
+    'bookingInfo': bookingInfo,
+    'eventDate': eventDate,
+    'priceInfo': priceInfo,
+    'trailDistanceKm': trailDistanceKm,
+    'trailDurationMinutes': trailDurationMinutes,
     'tags': tags,
     'status': status.value,
     'verified': verified,
@@ -153,6 +197,17 @@ class Spot {
     bool? featured,
     String? bestTimeToVisit,
     String? locationNote,
+    String? address,
+    String? openingHours,
+    String? phone,
+    String? whatsappUrl,
+    String? products,
+    String? seasons,
+    String? bookingInfo,
+    String? eventDate,
+    String? priceInfo,
+    double? trailDistanceKm,
+    int? trailDurationMinutes,
     List<String>? tags,
     SpotStatus? status,
     bool? verified,
@@ -180,6 +235,17 @@ class Spot {
       featured: featured ?? this.featured,
       bestTimeToVisit: bestTimeToVisit ?? this.bestTimeToVisit,
       locationNote: locationNote ?? this.locationNote,
+      address: address ?? this.address,
+      openingHours: openingHours ?? this.openingHours,
+      phone: phone ?? this.phone,
+      whatsappUrl: whatsappUrl ?? this.whatsappUrl,
+      products: products ?? this.products,
+      seasons: seasons ?? this.seasons,
+      bookingInfo: bookingInfo ?? this.bookingInfo,
+      eventDate: eventDate ?? this.eventDate,
+      priceInfo: priceInfo ?? this.priceInfo,
+      trailDistanceKm: trailDistanceKm ?? this.trailDistanceKm,
+      trailDurationMinutes: trailDurationMinutes ?? this.trailDurationMinutes,
       tags: tags ?? this.tags,
       status: status ?? this.status,
       verified: verified ?? this.verified,

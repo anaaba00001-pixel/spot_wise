@@ -3,6 +3,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/routes/app_routes.dart';
+import '../../core/constants/categories.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/auth_gate.dart';
@@ -244,7 +245,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
           countryCount: spotsP.countryCounts.length,
         ),
         const SizedBox(height: AppSpacing.sm),
-        _CategoryStrip(
+        _DalalCategorySections(
           selected: _filter.categoryIds,
           onToggle: _toggleCategory,
         ),
@@ -892,6 +893,50 @@ class _CircleButton extends StatelessWidget {
     );
     if (tooltip == null) return button;
     return Tooltip(message: tooltip!, child: button);
+  }
+}
+
+class _DalalCategorySections extends StatelessWidget {
+  final Set<String> selected;
+  final ValueChanged<String> onToggle;
+
+  const _DalalCategorySections({required this.selected, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('اكتشف حائل', style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 4),
+          Text('اختر ما يناسبك من دليل المدينة', style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: AppSpacing.md),
+          for (final section in Categories.sections) ...[
+            Text(section, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                for (final category in Categories.inSection(section))
+                  FilterChip(
+                    selected: selected.contains(category.id),
+                    onSelected: (_) => onToggle(category.id),
+                    avatar: Icon(category.icon, size: 18, color: selected.contains(category.id) ? Colors.white : category.color),
+                    label: Text(category.label),
+                    selectedColor: category.color,
+                    checkmarkColor: Colors.white,
+                    labelStyle: TextStyle(color: selected.contains(category.id) ? Colors.white : null),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ],
+      ),
+    );
   }
 }
 

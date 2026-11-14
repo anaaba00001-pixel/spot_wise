@@ -229,6 +229,17 @@ class DemoSeed {
     bool gem = false,
     bool featured = false,
     String best = '',
+    String address = '',
+    String hours = '',
+    String phone = '',
+    String whatsapp = '',
+    String products = '',
+    String seasons = '',
+    String booking = '',
+    String eventDate = '',
+    String priceInfo = '',
+    double trailKm = 0,
+    int trailMinutes = 0,
     List<String> tags = const [],
     SpotStatus status = SpotStatus.approved,
     bool verified = true,
@@ -256,6 +267,17 @@ class DemoSeed {
       hiddenGem: gem,
       featured: featured,
       bestTimeToVisit: best,
+      address: address,
+      openingHours: hours,
+      phone: phone,
+      whatsappUrl: whatsapp,
+      products: products,
+      seasons: seasons,
+      bookingInfo: booking,
+      eventDate: eventDate,
+      priceInfo: priceInfo,
+      trailDistanceKm: trailKm,
+      trailDurationMinutes: trailMinutes,
       tags: tags,
       status: status,
       verified: verified && status == SpotStatus.approved,
@@ -269,6 +291,21 @@ class DemoSeed {
   }
 
   static List<Spot> spots() => [
+    _spot(id: 'hail_aarif', name: 'قلعة عيرف', city: 'حائل', country: 'السعودية', category: 'heritage', lat: 27.5176, lng: 41.6962, desc: 'قلعة تاريخية مبنية من الطين على جبل عيرف، وتطل على مدينة حائل.', address: 'جبل عيرف، حائل', hours: 'يوميًا 4:00 م – 10:00 م', free: true, family: true, featured: true, best: 'قبل الغروب', tags: const ['تراث', 'إطلالة'], rating: 4.7, reviews: 186),
+    _spot(id: 'hail_qishlah', name: 'قصر القشلة', city: 'حائل', country: 'السعودية', category: 'heritage', lat: 27.5208, lng: 41.6926, desc: 'مبنى طيني تاريخي بباحة واسعة وأبراج دفاعية، ويعد من أبرز معالم وسط حائل.', address: 'وسط حائل', hours: 'السبت–الخميس 9:00 ص – 9:00 م', free: true, family: true, featured: true, tags: const ['تاريخ', 'عمارة نجدية'], rating: 4.6, reviews: 143),
+    _spot(id: 'hail_samra', name: 'منتزه جبل السمراء', city: 'حائل', country: 'السعودية', category: 'park', lat: 27.5372, lng: 41.7225, desc: 'إطلالة واسعة على المدينة ومكان مناسب للنزهات والجلسات المسائية.', address: 'جبل السمراء، حائل', hours: 'مفتوح على مدار الساعة', free: true, family: true, featured: true, best: 'الغروب', tags: const ['عائلي', 'إطلالة'], rating: 4.5, reviews: 228),
+    _spot(id: 'hail_jubbah', name: 'نقوش جبة الصخرية', city: 'جبة', country: 'السعودية', category: 'story', lat: 28.0119, lng: 40.9413, desc: 'قصة موقع فني صخري مسجل ضمن التراث العالمي، توثق نقوشه حياة الإنسان والحيوان في عصور قديمة.', address: 'جبة، منطقة حائل', hours: 'يفضل التنسيق قبل الزيارة', featured: true, tags: const ['يونسكو', 'قصة أثرية'], rating: 4.8, reviews: 96),
+    _spot(id: 'hail_kleija', name: 'طريقة كليجا حائل', city: 'حائل', country: 'السعودية', category: 'hail_cooking', lat: 27.5114, lng: 41.7208, desc: 'وصفة محلية: عجينة قمح محشوة بمزيج السكر والهيل والليمون الأسود، تُشكل وتخبز حتى تكتسب لونًا ذهبيًا.', tags: const ['وصفة', 'حلويات شعبية'], rating: 4.9, reviews: 74),
+    _spot(id: 'hail_marsah', name: 'مطبخ المرسى الشعبي', city: 'حائل', country: 'السعودية', category: 'popular_food', lat: 27.5261, lng: 41.7064, desc: 'مشروع محلي يقدم الجريش والقرصان والكبيبة الحائلية للطلب والاستلام.', address: 'حي برزان، حائل', hours: 'يوميًا 12:00 م – 11:00 م', phone: '+966500000001', whatsapp: 'https://wa.me/966500000001', tags: const ['طلبات', 'أكل حائلي'], rating: 4.7, reviews: 61),
+    _spot(id: 'hail_cafe', name: 'مقهى مطل السمراء', city: 'حائل', country: 'السعودية', category: 'cafe', lat: 27.5344, lng: 41.7168, desc: 'مقهى هادئ بجلسات تطل على المدينة ويقدم القهوة والحلويات.', address: 'طريق السمراء، حائل', hours: 'يوميًا 6:00 ص – 1:00 ص', phone: '+966500000002', rating: 4.5, reviews: 85),
+    _spot(id: 'hail_farm', name: 'مزرعة نخيل حائل', city: 'حائل', country: 'السعودية', category: 'farmer', lat: 27.4480, lng: 41.6720, desc: 'مشروع زراعي محلي يوفر التمور والخضروات الموسمية مباشرة من المزرعة.', products: 'تمور، خضروات موسمية، عسل', seasons: 'التمور: أغسطس–أكتوبر، الخضروات: حسب الموسم', booking: 'الطلب عبر واتساب والاستلام من المزرعة', phone: '+966500000003', whatsapp: 'https://wa.me/966500000003', rating: 4.8, reviews: 32),
+    _spot(id: 'hail_crochet', name: 'ورشة أساسيات الكروشيه', city: 'حائل', country: 'السعودية', category: 'crochet', lat: 27.5090, lng: 41.6990, desc: 'ورشة عملية للمبتدئات تشمل الأدوات والتطبيق على قطعة صغيرة.', eventDate: 'السبت 21 نوفمبر، 5:00 م', priceInfo: '120 ر.س شامل الأدوات', booking: 'التسجيل المسبق عبر رقم التواصل', phone: '+966500000004', rating: 4.6, reviews: 18),
+    _spot(id: 'hail_hike', name: 'مسار جبل أجا', city: 'حائل', country: 'السعودية', category: 'hiking', lat: 27.4500, lng: 41.5700, desc: 'مسار جبلي متوسط الصعوبة بين تشكيلات أجا الصخرية. ينصح بمرافق محلي وتجهيز ماء كافٍ.', address: 'نقطة البداية غرب حائل', best: 'الصباح الباكر شتاءً', trailKm: 6.5, trailMinutes: 180, tags: const ['متوسط', 'طبيعة'], rating: 4.8, reviews: 47),
+    _spot(id: 'hail_hotel', name: 'فندق دلال حائل', city: 'حائل', country: 'السعودية', category: 'hotel', lat: 27.5050, lng: 41.7050, desc: 'إقامة مريحة في موقع قريب من وسط المدينة والخدمات.', address: 'وسط حائل', hours: 'الاستقبال على مدار الساعة', phone: '+966165000000', rating: 4.4, reviews: 119),
+    _spot(id: 'hail_hospital', name: 'مستشفى الملك خالد بحائل', city: 'حائل', country: 'السعودية', category: 'hospital', lat: 27.5292, lng: 41.7057, desc: 'خدمات طبية وطوارئ لسكان وزوار المنطقة.', address: 'حائل', hours: 'الطوارئ على مدار الساعة', phone: '997', rating: 4.2, reviews: 90),
+  ];
+
+  static List<Spot> legacySpots() => [
     // ── Cairo ────────────────────────────────────────────────────────────
     _spot(
       id: 's_pyramids',

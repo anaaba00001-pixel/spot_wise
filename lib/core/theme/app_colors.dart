@@ -9,20 +9,20 @@ class AppColors {
   AppColors._();
 
   // ── Brand ────────────────────────────────────────────────────────────────
-  static const Color teal = Color(0xFF0E7C7B); // primary
-  static const Color tealDark = Color(0xFF0A5C5B);
-  static const Color tealLight = Color(0xFF3FA9A6);
-  static const Color tealMist = Color(0xFFD7EEEC);
+  static const Color teal = Color(0xFF4B236E); // Dalal primary
+  static const Color tealDark = Color(0xFF35154F);
+  static const Color tealLight = Color(0xFF765092);
+  static const Color tealMist = Color(0xFFEDE2F3);
 
-  static const Color coral = Color(0xFFFF6F5E); // accent / CTA
-  static const Color coralDark = Color(0xFFE85544);
-  static const Color coralMist = Color(0xFFFFE2DC);
+  static const Color coral = Color(0xFFC49A45); // warm Hail accent
+  static const Color coralDark = Color(0xFFA47D32);
+  static const Color coralMist = Color(0xFFF5EBD7);
 
   static const Color amber = Color(0xFFFFB454); // ratings / highlights
 
   // ── Neutrals (light) ──────────────────────────────────────────────────────
   static const Color cream = Color(
-    0xFFF7F7F5,
+    0xFFF7F3FA,
   ); // app background (clean near-white)
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceAlt = Color(0xFFF1F1EF); // chips / input fills
@@ -32,9 +32,9 @@ class AppColors {
   static const Color border = Color(0xFFEAEAE7); // hairline
 
   // ── Neutrals (dark) ───────────────────────────────────────────────────────
-  static const Color darkBg = Color(0xFF0E1A1F);
-  static const Color darkSurface = Color(0xFF152A30);
-  static const Color darkSurfaceAlt = Color(0xFF1C353C);
+  static const Color darkBg = Color(0xFF190D23);
+  static const Color darkSurface = Color(0xFF281438);
+  static const Color darkSurfaceAlt = Color(0xFF38204A);
   static const Color darkInk = Color(0xFFEAF1F2);
   static const Color darkInkSoft = Color(0xFFAFC2C5);
   static const Color darkInkFaint = Color(0xFF6E8A90);

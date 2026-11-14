@@ -10,8 +10,8 @@ class AppConfig {
   AppConfig._();
 
   // App identity ──────────────────────────────────────────────────────────
-  static const String appName = 'SpotWise';
-  static const String tagline = 'Discover · Plan · Personalise';
+  static const String appName = 'دلال';
+  static const String tagline = 'دليل حائل';
   static const String version = '1.0.0';
 
   // Free, no-key services that work right now ──────────────────────────────
@@ -19,7 +19,7 @@ class AppConfig {
       'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
   static const String osmTileUrlDark =
       'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
-  static const String osmUserAgent = 'com.spotwise.app';
+  static const String osmUserAgent = 'sa.dalal.hail';
   static const String nominatimBase = 'https://nominatim.openstreetmap.org';
   static const String googleMapsSearch =
       'https://www.google.com/maps/search/?api=1&query=';

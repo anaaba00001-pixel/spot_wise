@@ -35,7 +35,7 @@ class AppLogo extends StatelessWidget {
         ],
       ),
       child: Icon(
-        Icons.travel_explore_rounded,
+        Icons.explore_rounded,
         color: Colors.white,
         size: size * 0.6,
       ),
@@ -44,7 +44,7 @@ class AppLogo extends StatelessWidget {
     if (!showWordmark) return mark;
 
     final wordmark = Text(
-      'SpotWise',
+      'دلال',
       style: TextStyle(
         fontSize: size * 0.62,
         fontWeight: FontWeight.w800,
