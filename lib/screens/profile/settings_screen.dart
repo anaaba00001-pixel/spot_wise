@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/spots_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/trips_provider.dart';
@@ -42,6 +44,9 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeP = context.watch<ThemeProvider>();
+    final userId = context.select<AuthProvider, String?>(
+      (auth) => auth.user?.id,
+    );
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -75,6 +80,10 @@ class SettingsScreen extends StatelessWidget {
               onSelectionChanged: (s) => themeP.setMode(s.first),
             ),
             const SizedBox(height: AppSpacing.xl),
+            if (userId != null) ...[
+              _PreferredLanguageField(key: ValueKey(userId), userId: userId),
+              const SizedBox(height: AppSpacing.xl),
+            ],
             Text('Setup', style: text.titleMedium),
             const SizedBox(height: AppSpacing.sm),
             ListTile(
@@ -122,6 +131,111 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PreferredLanguageField extends StatefulWidget {
+  const _PreferredLanguageField({super.key, required this.userId});
+
+  final String userId;
+
+  @override
+  State<_PreferredLanguageField> createState() =>
+      _PreferredLanguageFieldState();
+}
+
+class _PreferredLanguageFieldState extends State<_PreferredLanguageField> {
+  static const _languages = {
+    'ar': 'العربية',
+    'ur': 'الأردية',
+    'en': 'الإنجليزية',
+    'pa': 'البنجابية',
+    'hi': 'الهندية',
+    'id': 'الإندونيسية',
+    'tr': 'التركية',
+    'bn': 'البنغالية',
+    'cy': 'الويلزية',
+    'uz': 'الأوزبكية',
+    'fr': 'الفرنسية',
+    'ru': 'الروسية',
+    'ha': 'الهوسا',
+    'yo': 'اليوروبا',
+    'ig': 'الإيغبو',
+    'de': 'الألمانية',
+    'zu': 'الزولو',
+    'xh': 'الخوسا',
+    'af': 'الأفريكانية',
+    'sfs': 'لغة الإشارة الجنوب أفريقية',
+    'am': 'الأمهرية',
+    'om': 'الأورومية',
+    'ti': 'التيغرينية',
+    'so': 'الصومالية',
+    'aa': 'العفرية',
+    'sw': 'السواحيلية',
+    'pt': 'البرتغالية',
+    'es': 'الإسبانية',
+  };
+
+  final _preferences = SharedPreferencesAsync();
+  late final Future<String?> _storedLanguage = _preferences.getString(
+    _preferenceKey,
+  );
+  String? _selectedLanguage;
+  bool _saving = false;
+
+  String get _preferenceKey => 'preferred_language.${widget.userId}';
+
+  Future<void> _saveLanguage(String? code) async {
+    if (code == null || _saving) return;
+    setState(() => _saving = true);
+    try {
+      await _preferences.setString(_preferenceKey, code);
+      if (mounted) setState(() => _selectedLanguage = code);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تعذّر حفظ اللغة المفضلة. حاولي مرة أخرى.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _storedLanguage,
+      builder: (context, snapshot) {
+        final code = _selectedLanguage ?? snapshot.data;
+        return InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'اللغة المفضلة',
+            prefixIcon: Icon(Icons.language_rounded),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: _languages.containsKey(code) ? code : null,
+              hint: const Text('اختاري لغة'),
+              items: [
+                for (final entry in _languages.entries)
+                  DropdownMenuItem(
+                    value: entry.key,
+                    child: Text(entry.value, overflow: TextOverflow.ellipsis),
+                  ),
+              ],
+              onChanged:
+                  _saving || snapshot.connectionState != ConnectionState.done
+                  ? null
+                  : _saveLanguage,
+            ),
+          ),
+        );
+      },
     );
   }
 }
