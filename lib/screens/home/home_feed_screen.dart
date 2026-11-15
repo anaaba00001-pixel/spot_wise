@@ -486,18 +486,15 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
           borderRadius: AppRadius.brXl,
           boxShadow: AppColors.softShadow,
         ),
-        child: Stack(
-          children: [
-            const PositionedDirectional(
-              end: -8,
-              bottom: -12,
-              child: _HailHeritageArt(),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 7,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   Text(
                     '$greeting · ${_date.format(now)}',
                     style: text.labelSmall?.copyWith(
@@ -550,112 +547,31 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
                       ),
                     ),
                   ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                flex: 3,
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 180),
+                    child: Image.asset(
+                      'assets/jubbah-thamudic-inscription.png',
+                      fit: BoxFit.contain,
+                      opacity: const AlwaysStoppedAnimation<double>(.72),
+                      excludeFromSemantics: true,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-}
-
-/// Decorative Hail mountains and abstract glyphs inspired by regional
-/// Thamudic rock inscriptions. Kept intentionally subtle behind the content.
-class _HailHeritageArt extends StatelessWidget {
-  const _HailHeritageArt();
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: CustomPaint(
-        size: const Size(230, 190),
-        painter: _HailHeritagePainter(),
-      ),
-    );
-  }
-}
-
-class _HailHeritagePainter extends CustomPainter {
-  const _HailHeritagePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final backMountain = Paint()
-      ..color = const Color(0x18F6DBC0)
-      ..style = PaintingStyle.fill;
-    final backRidge = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, 126)
-      ..lineTo(42, 88)
-      ..lineTo(76, 119)
-      ..lineTo(118, 67)
-      ..lineTo(157, 114)
-      ..lineTo(194, 82)
-      ..lineTo(size.width, 117)
-      ..lineTo(size.width, size.height)
-      ..close();
-    canvas.drawPath(backRidge, backMountain);
-
-    final frontMountain = Paint()
-      ..color = const Color(0x2EF6DBC0)
-      ..style = PaintingStyle.fill;
-    final frontRidge = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, 151)
-      ..lineTo(36, 119)
-      ..lineTo(63, 143)
-      ..lineTo(102, 101)
-      ..lineTo(137, 146)
-      ..lineTo(178, 113)
-      ..lineTo(size.width, 147)
-      ..lineTo(size.width, size.height)
-      ..close();
-    canvas.drawPath(frontRidge, frontMountain);
-
-    final line = Paint()
-      ..color = const Color(0x70E5C59F)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final glyphs = <Path>[
-      Path()
-        ..moveTo(48, 46)
-        ..lineTo(48, 82)
-        ..moveTo(35, 58)
-        ..lineTo(61, 58)
-        ..moveTo(38, 75)
-        ..lineTo(58, 65),
-      Path()
-        ..moveTo(92, 31)
-        ..lineTo(76, 56)
-        ..lineTo(103, 56)
-        ..close()
-        ..moveTo(90, 60)
-        ..lineTo(90, 78),
-      Path()
-        ..moveTo(142, 30)
-        ..lineTo(142, 67)
-        ..moveTo(127, 43)
-        ..lineTo(158, 55)
-        ..moveTo(127, 59)
-        ..lineTo(157, 40),
-      Path()
-        ..moveTo(185, 39)
-        ..lineTo(170, 53)
-        ..lineTo(185, 69)
-        ..lineTo(201, 53)
-        ..close(),
-    ];
-    for (final glyph in glyphs) {
-      canvas.drawPath(glyph, line);
-    }
-    canvas.drawCircle(const Offset(210, 27), 4, line);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Ink-filled call-to-action shown while browsing a destination: hands the

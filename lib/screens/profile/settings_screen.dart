@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/routes/app_routes.dart';
@@ -92,6 +93,21 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: const Text('Restore the original seeded content'),
                 onTap: () => _resetDemo(context),
               ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const _SettingsIcon(Icons.info_outline_rounded),
+              title: const Text('إسناد نقش جُبّة'),
+              subtitle: const Text(
+                'رسم رقمي عن صورة لريتشارد مورتل · CC BY 2.0',
+              ),
+              trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+              onTap: () => launchUrl(
+                Uri.parse(
+                  'https://commons.wikimedia.org/wiki/File:Thamudic_inscription_at_Jubbah_Rock_Art_Site,_Saudi_Arabia_(2).jpg',
+                ),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
             const SizedBox(height: AppSpacing.xl),
             Center(
               child: Column(
