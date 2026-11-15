@@ -24,6 +24,7 @@ import '../../widgets/app_menu_button.dart';
 import '../../widgets/destination_picker_sheet.dart';
 import '../../widgets/location_picker_sheet.dart';
 import '../../widgets/max_width.dart';
+import '../../widgets/network_photo.dart';
 import '../../widgets/offline_banner.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/skeletons.dart';
@@ -293,6 +294,13 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
           ),
           _rail(context, featured, auth),
         ],
+        _HomeCategoryRail(
+          spots: spotsP.spots,
+          selected: _filter.categoryIds,
+          onSelect: (ids) =>
+              setState(() => _filter = _filter.copyWith(categoryIds: ids)),
+          onBrowseAll: () => context.read<HomeTab>().go(2),
+        ),
         if (activeMode)
           _ActiveFilterBar(
             count: results.length,
@@ -377,6 +385,33 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
 
   /// Horizontal rail of editorial overlay cards (Featured / Recommended).
   Widget _rail(BuildContext context, List<Spot> spots, AuthProvider auth) {
+    return _HorizontalCardRail(
+      itemCount: spots.length,
+      itemBuilder: (_, i) {
+        final spot = spots[i];
+        return SpotOverlayCard(
+          spot: spot,
+          isSaved: auth.isSaved(spot.id),
+          onToggleSave: () => _toggleSave(spot),
+          onTap: () => Navigator.pushNamed(
+            context,
+            AppRoutes.spotDetails,
+            arguments: spot,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HorizontalCardRail extends StatelessWidget {
+  const _HorizontalCardRail({required this.itemCount, required this.itemBuilder});
+
+  final int itemCount;
+  final IndexedWidgetBuilder itemBuilder;
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 194,
       child: ListView.separated(
@@ -387,25 +422,139 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
           AppSpacing.lg,
           AppSpacing.sm,
         ),
-        itemCount: spots.length,
+        itemCount: itemCount,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
-        itemBuilder: (_, i) {
-          final spot = spots[i];
-          return SizedBox(
-            width: 238,
-            child: SpotOverlayCard(
-              spot: spot,
-              isSaved: auth.isSaved(spot.id),
-              onToggleSave: () => _toggleSave(spot),
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.spotDetails,
-                arguments: spot,
-              ),
-            ),
-          );
-        },
+        itemBuilder: (context, index) =>
+            SizedBox(width: 238, child: itemBuilder(context, index)),
       ),
+    );
+  }
+}
+
+class _HomeCategoryRail extends StatelessWidget {
+  const _HomeCategoryRail({
+    required this.spots,
+    required this.selected,
+    required this.onSelect,
+    required this.onBrowseAll,
+  });
+
+  final List<Spot> spots;
+  final Set<String> selected;
+  final ValueChanged<Set<String>> onSelect;
+  final VoidCallback onBrowseAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<CategoryStore>();
+    final entries = [
+      (label: 'المطاعم', icon: Icons.restaurant_rounded, ids: const {'restaurant'}),
+      (label: 'المقاهي', icon: Icons.local_cafe_rounded, ids: const {'cafes_drinks'}),
+      (
+        label: 'الطبيعة والتراث',
+        icon: Icons.terrain_rounded,
+        ids: Categories.rootsInSection('الطبيعة والتراث').map((c) => c.id).toSet(),
+      ),
+      (label: 'الإقامة', icon: Icons.hotel_rounded, ids: const {'accommodation'}),
+      (
+        label: 'الورش والأنشطة',
+        icon: Icons.palette_outlined,
+        ids: Categories.rootsInSection('الورش والأنشطة').map((c) => c.id).toSet(),
+      ),
+      (label: 'التسوق', icon: Icons.shopping_bag_rounded, ids: const {'shopping'}),
+    ]
+        .map((entry) => (
+              label: entry.label,
+              icon: entry.icon,
+              ids: entry.ids.where(store.isEnabled).toSet(),
+            ))
+        .where((entry) => entry.ids.isNotEmpty)
+        .toList();
+
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeader(
+          title: 'فئات دليل حائل',
+          actionLabel: 'عرض الكل',
+          onAction: onBrowseAll,
+        ),
+        _HorizontalCardRail(
+          itemCount: entries.length,
+          itemBuilder: (context, index) {
+            final entry = entries[index];
+            final filter = SpotFilter(categoryIds: entry.ids);
+            String? photo;
+            for (final spot in spots) {
+              final cover = spot.coverPhoto;
+              if (cover != null &&
+                  cover.isNotEmpty &&
+                  store.isEnabled(spot.categoryId) &&
+                  filter.matches(spot)) {
+                photo = cover;
+                if (spot.featured) break;
+              }
+            }
+            final isSelected =
+                selected.length == entry.ids.length && selected.containsAll(entry.ids);
+            return Semantics(
+              button: true,
+              selected: isSelected,
+              child: Card(
+                child: InkWell(
+                  onTap: () => onSelect(isSelected ? const {} : entry.ids),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (photo != null) NetworkPhoto(photo, fit: BoxFit.cover),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: photo == null
+                              ? AppColors.lagoonGradient
+                              : AppColors.cardScrim,
+                        ),
+                      ),
+                      PositionedDirectional(
+                        top: AppSpacing.md,
+                        start: AppSpacing.md,
+                        child: CircleAvatar(
+                          backgroundColor: AppColors.tealDark,
+                          foregroundColor: AppColors.coralMist,
+                          child: Icon(isSelected ? Icons.check_rounded : entry.icon),
+                        ),
+                      ),
+                      PositionedDirectional(
+                        start: AppSpacing.lg,
+                        end: AppSpacing.lg,
+                        bottom: AppSpacing.lg,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                entry.label,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(color: Colors.white),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            const Icon(Icons.chevron_left_rounded, color: Colors.white),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
