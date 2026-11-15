@@ -3,10 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/app_config.dart';
-import '../../core/localization/app_strings.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../providers/locale_provider.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/app_language.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/spots_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/trips_provider.dart';
@@ -44,32 +45,34 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeP = context.watch<ThemeProvider>();
+    final l10n = AppLocalizations.of(context)!;
+    final userId = context.select<AuthProvider, String?>((auth) => auth.user?.id);
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('settings'))),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: MaxWidthBox(
         maxWidth: 640,
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
-            Text(context.tr('appearance'), style: text.titleMedium),
+            Text(l10n.appearance, style: text.titleMedium),
             const SizedBox(height: AppSpacing.md),
             SegmentedButton<ThemeMode>(
               segments: [
                 ButtonSegment(
                   value: ThemeMode.system,
-                  label: Text(context.tr('system')),
+                  label: Text(l10n.systemTheme),
                   icon: const Icon(Icons.brightness_auto_rounded),
                 ),
                 ButtonSegment(
                   value: ThemeMode.light,
-                  label: Text(context.tr('light')),
+                  label: Text(l10n.lightTheme),
                   icon: const Icon(Icons.light_mode_rounded),
                 ),
                 ButtonSegment(
                   value: ThemeMode.dark,
-                  label: Text(context.tr('dark')),
+                  label: Text(l10n.darkTheme),
                   icon: const Icon(Icons.dark_mode_rounded),
                 ),
               ],
@@ -77,15 +80,17 @@ class SettingsScreen extends StatelessWidget {
               onSelectionChanged: (s) => themeP.setMode(s.first),
             ),
             const SizedBox(height: AppSpacing.xl),
-            const _PreferredLanguageField(),
-            const SizedBox(height: AppSpacing.xl),
-            Text(context.tr('setup'), style: text.titleMedium),
+            if (userId != null) ...[
+              const _PreferredLanguageField(),
+              const SizedBox(height: AppSpacing.xl),
+            ],
+            Text(l10n.setup, style: text.titleMedium),
             const SizedBox(height: AppSpacing.sm),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const _SettingsIcon(Icons.extension_outlined),
-              title: Text(context.tr('integrations')),
-              subtitle: Text(context.tr('integrationsSubtitle')),
+              title: Text(l10n.integrations),
+              subtitle: Text(l10n.integrationsSubtitle),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => Navigator.pushNamed(context, AppRoutes.integrations),
             ),
@@ -93,8 +98,8 @@ class SettingsScreen extends StatelessWidget {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const _SettingsIcon(Icons.restart_alt_rounded),
-                title: Text(context.tr('resetDemo')),
-                subtitle: Text(context.tr('resetDemoSubtitle')),
+                title: Text(l10n.resetDemo),
+                subtitle: Text(l10n.resetDemoSubtitle),
                 onTap: () => _resetDemo(context),
               ),
             ListTile(
@@ -135,37 +140,29 @@ class _PreferredLanguageField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localeP = context.watch<LocaleProvider>();
+    final language = context.watch<AppLanguage>();
+    final l10n = AppLocalizations.of(context)!;
     return InputDecorator(
       decoration: InputDecoration(
-        labelText: context.tr('language'),
+        labelText: l10n.appLanguage,
         prefixIcon: const Icon(Icons.language_rounded),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           isExpanded: true,
-          value: localeP.languageCode,
-          hint: Text(context.tr('chooseLanguage')),
-          items: [
-            for (final entry in LocaleProvider.languages.entries)
-              DropdownMenuItem(
-                value: entry.key,
-                child: Text(entry.value, overflow: TextOverflow.ellipsis),
-              ),
+          value: language.locale.languageCode,
+          items: const [
+            DropdownMenuItem(value: 'ar', child: Text('العربية')),
+            DropdownMenuItem(value: 'en', child: Text('English')),
           ],
-          onChanged: (code) async {
+          onChanged: language.saving ? null : (code) async {
             if (code == null) return;
             try {
-              await context.read<LocaleProvider>().setLanguage(code);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(context.tr('languageSaved'))),
-                );
-              }
+              await context.read<AppLanguage>().setLanguage(code);
             } catch (_) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(context.tr('languageError'))),
+                  SnackBar(content: Text(l10n.languageSaveError)),
                 );
               }
             }

@@ -1,0 +1,26 @@
+{
+  "@@locale": "ar",
+  "settings": "الإعدادات",
+  "appLanguage": "لغة التطبيق",
+  "languageSaveError": "تعذّر حفظ اللغة. حاولي مرة أخرى.",
+  "homeTab": "الرئيسية",
+  "mapTab": "الخريطة",
+  "categoriesTab": "الفئات",
+  "favoritesTab": "المفضلة",
+  "addPlace": "إضافة مكان",
+  "categoriesTitle": "فئات دليل حائل",
+  "servicesSection": "دليل الخدمات",
+  "experiencesSection": "تجارب حائل",
+  "workshopsSection": "الورش والأنشطة",
+  "natureSection": "الطبيعة والتراث",
+  "restaurants": "المطاعم"
+  ,"appearance": "المظهر"
+  ,"systemTheme": "النظام"
+  ,"lightTheme": "فاتح"
+  ,"darkTheme": "داكن"
+  ,"setup": "الإعداد والربط"
+  ,"integrations": "التكاملات والإعداد"
+  ,"integrationsSubtitle": "ربط Firebase وGemini والمزيد لاحقًا"
+  ,"resetDemo": "إعادة بيانات العرض"
+  ,"resetDemoSubtitle": "استعادة المحتوى التجريبي الأصلي"
+}

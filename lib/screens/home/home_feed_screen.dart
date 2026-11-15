@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/routes/app_routes.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/constants/categories.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -1437,7 +1438,7 @@ class DalalCategoriesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const AppMenuButton(),
-        title: const Text('فئات دليل حائل'),
+        title: Text(AppLocalizations.of(context)!.categoriesTitle),
       ),
       body: MaxWidthBox(
         child: ListView(
@@ -1532,7 +1533,16 @@ class _DalalCategorySectionsState extends State<_DalalCategorySections> {
   Widget build(BuildContext context) {
     final store = context.watch<CategoryStore>();
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final sections = <String, List<SpotCategory>>{};
+
+    String sectionLabel(String section) => switch (section) {
+      _nature => l10n.natureSection,
+      _services => l10n.servicesSection,
+      _experiences => l10n.experiencesSection,
+      _workshops => l10n.workshopsSection,
+      _ => section,
+    };
 
     for (final section in Categories.sections) {
       final entries = Categories.rootsInSection(
@@ -1559,7 +1569,7 @@ class _DalalCategorySectionsState extends State<_DalalCategorySections> {
     ) {
       final isDark = theme.brightness == Brightness.dark;
       return _CategorySectionTile(
-        label: section,
+        label: sectionLabel(section),
         icon: icon,
         fill: isDark ? darkFill : lightFill,
         ink: isDark ? darkInk : lightInk,
@@ -1708,7 +1718,7 @@ class _DalalCategorySectionsState extends State<_DalalCategorySections> {
                     header: true,
                     liveRegion: true,
                     child: Text(
-                      selectedSection,
+                      sectionLabel(selectedSection),
                       style: theme.textTheme.titleMedium,
                     ),
                   ),
@@ -1719,7 +1729,11 @@ class _DalalCategorySectionsState extends State<_DalalCategorySections> {
                       for (final category in sections[selectedSection]!)
                         ActionChip(
                           avatar: Icon(category.icon, size: 18),
-                          label: Text(category.label),
+                          label: Text(
+                            category.id == 'restaurant'
+                                ? l10n.restaurants
+                                : category.label,
+                          ),
                           onPressed: () =>
                               _selectCategory(context, category, store),
                         ),

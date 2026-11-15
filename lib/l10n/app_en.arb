@@ -1,0 +1,26 @@
+{
+  "@@locale": "en",
+  "settings": "Settings",
+  "appLanguage": "App language",
+  "languageSaveError": "Could not save the language. Please try again.",
+  "homeTab": "Home",
+  "mapTab": "Map",
+  "categoriesTab": "Categories",
+  "favoritesTab": "Favorites",
+  "addPlace": "Add a place",
+  "categoriesTitle": "Hail Guide Categories",
+  "servicesSection": "Services",
+  "experiencesSection": "Hail Experiences",
+  "workshopsSection": "Workshops and Activities",
+  "natureSection": "Nature and Heritage",
+  "restaurants": "Restaurants"
+  ,"appearance": "Appearance"
+  ,"systemTheme": "System"
+  ,"lightTheme": "Light"
+  ,"darkTheme": "Dark"
+  ,"setup": "Setup"
+  ,"integrations": "Integrations & setup"
+  ,"integrationsSubtitle": "Connect Firebase, Gemini and more later"
+  ,"resetDemo": "Reset demo data"
+  ,"resetDemoSubtitle": "Restore the original seeded content"
+}

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/routes/app_routes.dart';
-import '../../core/localization/app_strings.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/auth_gate.dart';
@@ -98,6 +98,7 @@ class _FloatingDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       minimum: const EdgeInsets.fromLTRB(
@@ -128,14 +129,14 @@ class _FloatingDock extends StatelessWidget {
                       index: 0,
                       icon: Icons.home_outlined,
                       selectedIcon: Icons.home_rounded,
-                      label: context.tr('home'),
+                      label: l10n.homeTab,
                     ),
                     _NavItem(
                       tab: tab,
                       index: 1,
                       icon: Icons.map_outlined,
                       selectedIcon: Icons.map_rounded,
-                      label: context.tr('map'),
+                      label: l10n.mapTab,
                     ),
                     _DockAddButton(onTap: onAddSpot),
                     _NavItem(
@@ -143,14 +144,14 @@ class _FloatingDock extends StatelessWidget {
                       index: 2,
                       icon: Icons.category_outlined,
                       selectedIcon: Icons.category_rounded,
-                      label: context.tr('categories'),
+                      label: l10n.categoriesTab,
                     ),
                     _NavItem(
                       tab: tab,
                       index: 3,
                       icon: Icons.luggage_outlined,
                       selectedIcon: Icons.luggage_rounded,
-                      label: context.tr('favorites'),
+                      label: l10n.favoritesTab,
                     ),
                   ],
                 ),
@@ -175,7 +176,7 @@ class _DockAddButton extends StatelessWidget {
       width: 58,
       child: Center(
         child: Tooltip(
-          message: context.tr('addPlace'),
+          message: AppLocalizations.of(context)!.addPlace,
           child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
