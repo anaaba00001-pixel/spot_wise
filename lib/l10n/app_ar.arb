@@ -13,14 +13,24 @@
   "experiencesSection": "تجارب حائل",
   "workshopsSection": "الورش والأنشطة",
   "natureSection": "الطبيعة والتراث",
-  "restaurants": "المطاعم"
-  ,"appearance": "المظهر"
-  ,"systemTheme": "النظام"
-  ,"lightTheme": "فاتح"
-  ,"darkTheme": "داكن"
-  ,"setup": "الإعداد والربط"
-  ,"integrations": "التكاملات والإعداد"
-  ,"integrationsSubtitle": "ربط Firebase وGemini والمزيد لاحقًا"
-  ,"resetDemo": "إعادة بيانات العرض"
-  ,"resetDemoSubtitle": "استعادة المحتوى التجريبي الأصلي"
+  "restaurants": "المطاعم",
+  "appearance": "المظهر",
+  "systemTheme": "النظام",
+  "lightTheme": "فاتح",
+  "darkTheme": "داكن",
+  "setup": "الإعداد والربط",
+  "integrations": "التكاملات والإعداد",
+  "integrationsSubtitle": "ربط Firebase وGemini والمزيد لاحقًا",
+  "resetDemo": "إعادة بيانات العرض",
+  "resetDemoSubtitle": "استعادة المحتوى التجريبي الأصلي",
+  "healthSection": "الصحة",
+  "allInCategory": "كل {category}",
+  "allSubcategories": "عرض جميع الفئات الفرعية",
+  "@allInCategory": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  }
 }

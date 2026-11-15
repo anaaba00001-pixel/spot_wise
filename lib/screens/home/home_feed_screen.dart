@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/routes/app_routes.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/constants/categories.dart';
+import '../../core/l10n/category_labels.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/auth_gate.dart';
@@ -1456,23 +1457,10 @@ class DalalCategoriesScreen extends StatelessWidget {
   }
 }
 
-class _DalalCategorySections extends StatefulWidget {
+class _DalalCategorySections extends StatelessWidget {
   const _DalalCategorySections({required this.onBrowse});
 
   final ValueChanged<String> onBrowse;
-
-  @override
-  State<_DalalCategorySections> createState() =>
-      _DalalCategorySectionsState();
-}
-
-class _DalalCategorySectionsState extends State<_DalalCategorySections> {
-  static const _nature = 'الطبيعة والتراث';
-  static const _services = 'دليل الخدمات';
-  static const _experiences = 'تجارب حائل';
-  static const _workshops = 'الورش والأنشطة';
-
-  String? _selectedSection;
 
   Future<void> _selectCategory(
     BuildContext context,
@@ -1484,7 +1472,7 @@ class _DalalCategorySectionsState extends State<_DalalCategorySections> {
     ).where((child) => store.isEnabled(child.id)).toList();
 
     if (children.isEmpty) {
-      widget.onBrowse(category.id);
+      onBrowse(category.id);
       return;
     }
 
@@ -1504,320 +1492,314 @@ class _DalalCategorySectionsState extends State<_DalalCategorySections> {
               AppSpacing.sm,
             ),
             child: Text(
-              category.label,
+              context.categoryLabel(category),
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
           ListTile(
             leading: Icon(category.icon, color: category.color),
-            title: Text('كل ${category.label}'),
-            subtitle: const Text('عرض جميع الفئات الفرعية'),
+            title: Text(
+              AppLocalizations.of(
+                context,
+              )!.allInCategory(context.categoryLabel(category)),
+            ),
+            subtitle: Text(AppLocalizations.of(context)!.allSubcategories),
             onTap: () => Navigator.pop(context, category.id),
           ),
           const Divider(),
           for (final child in children)
             ListTile(
               leading: Icon(child.icon, color: child.color),
-              title: Text(child.label),
-              trailing: const Icon(Icons.chevron_left_rounded),
+              title: Text(context.categoryLabel(child)),
+              trailing: const Icon(
+                Icons.chevron_right_rounded,
+                textDirection: TextDirection.ltr,
+              ),
               onTap: () => Navigator.pop(context, child.id),
             ),
         ],
       ),
     );
 
-    if (mounted && choice != null) widget.onBrowse(choice);
+    if (context.mounted && choice != null) onBrowse(choice);
   }
 
   @override
   Widget build(BuildContext context) {
     final store = context.watch<CategoryStore>();
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final sections = <String, List<SpotCategory>>{};
-
-    String sectionLabel(String section) => switch (section) {
-      _nature => l10n.natureSection,
-      _services => l10n.servicesSection,
-      _experiences => l10n.experiencesSection,
-      _workshops => l10n.workshopsSection,
-      _ => section,
-    };
+    final theme = Theme.of(context);
+    final sections = <Widget>[];
 
     for (final section in Categories.sections) {
       final entries = Categories.rootsInSection(
         section,
       ).where((category) => store.isEnabled(category.id)).toList();
-      if (entries.isNotEmpty) sections[section] = entries;
-    }
+      if (entries.isEmpty) continue;
 
-    if (sections.isEmpty) return const SizedBox.shrink();
-
-    final selectedSection = sections.containsKey(_selectedSection)
-        ? _selectedSection!
-        : sections.containsKey(_nature)
-        ? _nature
-        : sections.keys.first;
-
-    Widget tile(
-      String section,
-      IconData icon,
-      Color lightFill,
-      Color darkFill,
-      Color lightInk,
-      Color darkInk,
-    ) {
-      final isDark = theme.brightness == Brightness.dark;
-      return _CategorySectionTile(
-        label: sectionLabel(section),
-        icon: icon,
-        fill: isDark ? darkFill : lightFill,
-        ink: isDark ? darkInk : lightInk,
-        selected: section == selectedSection,
-        featured: section == _nature,
-        onTap: () => setState(() => _selectedSection = section),
-      );
-    }
-
-    final nature = sections.containsKey(_nature)
-        ? tile(
-            _nature,
-            Icons.terrain_rounded,
-            const Color(0xFF254B40),
-            const Color(0xFF203C34),
-            const Color(0xFFFFF8E8),
-            const Color(0xFFFFF8E8),
-          )
-        : null;
-
-    final quickLinks = [
-      if (sections.containsKey(_services))
-        tile(
-          _services,
+      final (label, icon, light, dark) = switch (section) {
+        'دليل الخدمات' => (
+          l10n.servicesSection,
           Icons.storefront_outlined,
           const Color(0xFFEBDBE7),
           const Color(0xFF472C43),
-          const Color(0xFF64345B),
-          const Color(0xFFF3C3E8),
         ),
-      if (sections.containsKey(_experiences))
-        tile(
-          _experiences,
+        'تجارب حائل' => (
+          l10n.experiencesSection,
           Icons.restaurant_rounded,
           const Color(0xFFF1DFC1),
           const Color(0xFF503B27),
-          const Color(0xFF70441A),
-          const Color(0xFFFFD6A0),
         ),
-    ];
+        'الورش والأنشطة' => (
+          l10n.workshopsSection,
+          Icons.palette_outlined,
+          const Color(0xFFF0D9D3),
+          const Color(0xFF4D302C),
+        ),
+        'الطبيعة والتراث' => (
+          l10n.natureSection,
+          Icons.terrain_rounded,
+          const Color(0xFFDCE8DD),
+          const Color(0xFF28453B),
+        ),
+        'الصحة' => (
+          l10n.healthSection,
+          Icons.medical_services_outlined,
+          const Color(0xFFEFE0E4),
+          const Color(0xFF492F3D),
+        ),
+        _ => (
+          section,
+          entries.first.icon,
+          Theme.of(context).colorScheme.surfaceContainerLow,
+          Theme.of(context).colorScheme.surfaceContainerLow,
+        ),
+      };
 
-    final workshops = sections.containsKey(_workshops)
-        ? tile(
-            _workshops,
-            Icons.palette_outlined,
-            const Color(0xFFF0D9D3),
-            const Color(0xFF4D302C),
-            const Color(0xFF80382D),
-            const Color(0xFFFFC3B9),
-          )
-        : null;
-
-    const mainSections = {_nature, _services, _experiences, _workshops};
-    final otherSections = sections.keys.where(
-      (section) => !mainSections.contains(section),
-    );
+      final fill = theme.brightness == Brightness.dark ? dark : light;
+      sections.add(
+        _CategoryGroup(
+          title: label,
+          icon: icon,
+          fill: fill,
+          showMountains: section == 'الطبيعة والتراث',
+          cards: [
+            for (final category in entries)
+              _CategoryCard(
+                label: context.categoryLabel(category),
+                icon: category.icon,
+                accent: fill,
+                hasChildren: Categories.childrenOf(
+                  category.id,
+                ).any((child) => store.isEnabled(child.id)),
+                onTap: () => _selectCategory(context, category, store),
+              ),
+          ],
+        ),
+      );
+    }
 
     return Padding(
       padding: AppSpacing.screenPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: AppSpacing.lg),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final sideTiles = Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (quickLinks.isNotEmpty)
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (var i = 0; i < quickLinks.length; i++) ...[
-                            if (i > 0)
-                              const SizedBox(width: AppSpacing.sm),
-                            Expanded(child: quickLinks[i]),
-                          ],
-                        ],
-                      ),
-                    ),
-                  if (workshops != null) ...[
-                    if (quickLinks.isNotEmpty)
-                      const SizedBox(height: AppSpacing.sm),
-                    workshops,
-                  ],
-                ],
-              );
-
-              if (nature == null) return sideTiles;
-              if (quickLinks.isEmpty && workshops == null) return nature;
-
-              if (constraints.maxWidth < 500) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    nature,
-                    const SizedBox(height: AppSpacing.sm),
-                    sideTiles,
-                  ],
-                );
-              }
-
-              return IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(flex: 2, child: nature),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(flex: 3, child: sideTiles),
-                  ],
-                ),
-              );
-            },
-          ),
-          if (otherSections.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.xs,
-              children: [
-                for (final section in otherSections)
-                  ChoiceChip(
-                    avatar: Icon(sections[section]!.first.icon, size: 18),
-                    label: Text(section),
-                    selected: section == selectedSection,
-                    onSelected: (_) =>
-                        setState(() => _selectedSection = section),
-                  ),
-              ],
+          for (final section in sections)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.lg),
+              child: section,
             ),
-          ],
-          const SizedBox(height: AppSpacing.md),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: theme.colorScheme.outlineVariant),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Semantics(
-                    header: true,
-                    liveRegion: true,
-                    child: Text(
-                      sectionLabel(selectedSection),
-                      style: theme.textTheme.titleMedium,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    children: [
-                      for (final category in sections[selectedSection]!)
-                        ActionChip(
-                          avatar: Icon(category.icon, size: 18),
-                          label: Text(
-                            category.id == 'restaurant'
-                                ? l10n.restaurants
-                                : category.label,
-                          ),
-                          onPressed: () =>
-                              _selectCategory(context, category, store),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _CategorySectionTile extends StatelessWidget {
-  const _CategorySectionTile({
-    required this.label,
+class _CategoryGroup extends StatelessWidget {
+  const _CategoryGroup({
+    required this.title,
     required this.icon,
     required this.fill,
-    required this.ink,
-    required this.selected,
-    required this.featured,
+    required this.showMountains,
+    required this.cards,
+  });
+
+  final String title;
+  final IconData icon;
+  final Color fill;
+  final bool showMountains;
+  final List<_CategoryCard> cards;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: ColoredBox(
+            color: showMountains ? const Color(0xFF254B40) : fill,
+            child: Stack(
+              children: [
+                if (showMountains)
+                  const Positioned.fill(
+                    child: IgnorePointer(
+                      child: CustomPaint(painter: _HailMountainsPainter()),
+                    ),
+                  ),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: showMountains ? 112 : 60,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Row(
+                      children: [
+                        Icon(
+                          icon,
+                          color: showMountains
+                              ? const Color(0xFFFFF8E8)
+                              : theme.colorScheme.onSurface,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: showMountains
+                                    ? const Color(0xFFFFF8E8)
+                                    : theme.colorScheme.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final columns = switch (width) {
+              >= 600 => 4,
+              >= 420 => 3,
+              >= 250 => 2,
+              _ => 1,
+            };
+            final rowCount = (cards.length + columns - 1) ~/ columns;
+            final baseCount = cards.length ~/ rowCount;
+            final largerRows = cards.length % rowCount;
+            var start = 0;
+            final rows = <Widget>[];
+
+            // Distribute the last few cards across rows to avoid a lone tile.
+            for (var row = 0; row < rowCount; row++) {
+              final count = baseCount + (row < largerRows ? 1 : 0);
+              rows.add(
+                Padding(
+                  padding: EdgeInsets.only(top: row == 0 ? 0 : AppSpacing.sm),
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var column = 0; column < count; column++) ...[
+                          if (column > 0) const SizedBox(width: AppSpacing.sm),
+                          Expanded(child: cards[start + column]),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              );
+              start += count;
+            }
+
+            return Column(children: rows);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({
+    required this.label,
+    required this.icon,
+    required this.accent,
+    required this.hasChildren,
     required this.onTap,
   });
 
   final String label;
   final IconData icon;
-  final Color fill;
-  final Color ink;
-  final bool selected;
-  final bool featured;
+  final Color accent;
+  final bool hasChildren;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-      side: selected ? BorderSide(color: ink, width: 2) : BorderSide.none,
-    );
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: Material(
-        color: fill,
-        shape: shape,
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          fit: StackFit.passthrough,
-          children: [
-            if (featured)
-              const Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(painter: _HailMountainsPainter()),
-                ),
-              ),
-            InkWell(
-              onTap: onTap,
-              customBorder: shape,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: featured ? 132 : 88),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, color: ink, size: 23),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        label,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: ink,
-                          fontWeight: FontWeight.w700,
+    return Material(
+      color: scheme.surface,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: scheme.outlineVariant),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 100),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: accent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          icon,
+                          color: scheme.onSurface,
+                          size: 20,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const Spacer(),
+                    if (hasChildren)
+                      Icon(
+                        Icons.expand_more_rounded,
+                        size: 18,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(label, style: theme.textTheme.labelLarge),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

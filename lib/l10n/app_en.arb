@@ -13,14 +13,17 @@
   "experiencesSection": "Hail Experiences",
   "workshopsSection": "Workshops and Activities",
   "natureSection": "Nature and Heritage",
-  "restaurants": "Restaurants"
-  ,"appearance": "Appearance"
-  ,"systemTheme": "System"
-  ,"lightTheme": "Light"
-  ,"darkTheme": "Dark"
-  ,"setup": "Setup"
-  ,"integrations": "Integrations & setup"
-  ,"integrationsSubtitle": "Connect Firebase, Gemini and more later"
-  ,"resetDemo": "Reset demo data"
-  ,"resetDemoSubtitle": "Restore the original seeded content"
+  "restaurants": "Restaurants",
+  "appearance": "Appearance",
+  "systemTheme": "System",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "setup": "Setup",
+  "integrations": "Integrations & setup",
+  "integrationsSubtitle": "Connect Firebase, Gemini and more later",
+  "resetDemo": "Reset demo data",
+  "resetDemoSubtitle": "Restore the original seeded content",
+  "healthSection": "Health",
+  "allInCategory": "All {category}",
+  "allSubcategories": "Show all subcategories"
 }
