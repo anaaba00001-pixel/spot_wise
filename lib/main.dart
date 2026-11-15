@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hijri/hijri_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
   }
 
   await initializeDateFormatting('ar');
+  HijriCalendar.setLocal('ar');
   await Hive.initFlutter();
   await ServiceLocator.instance.init();
 

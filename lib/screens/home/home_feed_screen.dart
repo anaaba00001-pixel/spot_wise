@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:hijri/hijri_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart' hide Path;
@@ -463,11 +464,39 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
     }
   }
 
+  Future<void> _showWeatherSource(BuildContext context) => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      icon: const Icon(Icons.cloud_outlined),
+      title: const Text('معلومات الطقس'),
+      content: const Text(
+        'بيانات الطقس مقدمة من Open‑Meteo وفق ترخيص CC BY 4.0.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('إغلاق'),
+        ),
+        FilledButton.tonalIcon(
+          onPressed: () => launchUrl(
+            Uri.parse('https://open-meteo.com/'),
+            mode: LaunchMode.externalApplication,
+          ),
+          icon: const Icon(Icons.open_in_new_rounded, size: 17),
+          label: const Text('Open‑Meteo'),
+        ),
+      ],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     // Saudi Arabia uses UTC+3 year-round.
     final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+    final hijri = HijriCalendar.fromDate(now);
+    final hijriDate =
+        '${hijri.hDay} ${hijri.longMonthName} ${hijri.hYear} هـ';
     final greeting = now.hour >= 5 && now.hour < 12
         ? 'صباح الخير'
         : 'مساء الخير';
@@ -496,7 +525,7 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                   Text(
-                    '$greeting · ${_date.format(now)}',
+                    '$greeting · ${_date.format(now)}\n$hijriDate',
                     style: text.labelSmall?.copyWith(
                       color: AppColors.coralMist,
                       letterSpacing: 0.9,
@@ -513,9 +542,30 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
                     style: text.bodyMedium?.copyWith(color: AppColors.cream),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'طقس حائل اليوم',
-                    style: text.titleSmall?.copyWith(color: Colors.white),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'طقس حائل اليوم',
+                        style: text.titleSmall?.copyWith(color: Colors.white),
+                      ),
+                      const SizedBox(width: 2),
+                      IconButton(
+                        onPressed: () => _showWeatherSource(context),
+                        tooltip: 'معلومات مصدر الطقس',
+                        visualDensity: VisualDensity.compact,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 30,
+                          height: 30,
+                        ),
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(
+                          Icons.info_outline_rounded,
+                          size: 17,
+                          color: AppColors.coralMist,
+                        ),
+                      ),
+                    ],
                   ),
                   FutureBuilder<String?>(
                     future: _weather,
@@ -531,21 +581,6 @@ class _GreetingHeaderState extends State<_GreetingHeader> {
                         ),
                       );
                     },
-                  ),
-                  const SizedBox(height: 2),
-                  InkWell(
-                    onTap: () => launchUrl(
-                      Uri.parse('https://open-meteo.com/'),
-                      mode: LaunchMode.externalApplication,
-                    ),
-                    child: Text(
-                      'مصدر الطقس',
-                      style: text.labelSmall?.copyWith(
-                        color: AppColors.cream.withValues(alpha: .78),
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppColors.cream.withValues(alpha: .55),
-                      ),
-                    ),
                   ),
                   ],
                 ),
