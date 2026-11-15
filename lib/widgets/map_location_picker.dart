@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../core/config/app_config.dart';
 import '../core/theme/app_spacing.dart';
 import 'glass_icon_button.dart';
+import 'osm_attribution.dart';
 import 'spot_marker.dart';
 
 /// Full-screen "aim the map" picker: pan/zoom under a fixed centre pin, then
@@ -55,6 +56,11 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                 maxZoom: 19,
               ),
             ],
+          ),
+          Positioned(
+            left: AppSpacing.md,
+            bottom: MediaQuery.paddingOf(context).bottom + 68,
+            child: const OsmAttribution(),
           ),
           // Fixed centre pin — the map moves underneath it, so the marker's
           // centre is always the chosen point.

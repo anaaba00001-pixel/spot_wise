@@ -17,6 +17,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/feedback.dart';
 import '../../widgets/glass_icon_button.dart';
 import '../../widgets/network_photo.dart';
+import '../../widgets/osm_attribution.dart';
 import '../../widgets/spot_marker.dart';
 import '../../widgets/spot_search_sheet.dart';
 import '../../widgets/trip_budget_card.dart';
@@ -317,6 +318,13 @@ class _StopsMap extends StatelessWidget {
                   child: SpotMarker(categoryId: s.categoryId),
                 ),
             ],
+          ),
+          const Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.xs),
+              child: OsmAttribution(),
+            ),
           ),
         ],
       ),

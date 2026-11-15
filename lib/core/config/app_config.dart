@@ -16,9 +16,7 @@ class AppConfig {
 
   // Free, no-key services that work right now ──────────────────────────────
   static const String osmTileUrl =
-      'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
-  static const String osmTileUrlDark =
-      'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   static const String osmUserAgent = 'sa.dalal.hail';
   static const String nominatimBase = 'https://nominatim.openstreetmap.org';
   static const String googleMapsSearch =

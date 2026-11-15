@@ -15,6 +15,7 @@ import '../../providers/trips_provider.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/feedback.dart';
 import '../../widgets/network_photo.dart';
+import '../../widgets/osm_attribution.dart';
 import '../../widgets/spot_marker.dart';
 import '../../widgets/trip_budget_card.dart';
 
@@ -153,7 +154,14 @@ class _ItineraryResultScreenState extends State<ItineraryResultScreen> {
                             ),
                         ],
                       ),
-                    ],
+                        const Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: EdgeInsets.all(AppSpacing.xs),
+                          child: OsmAttribution(),
+                        ),
+                      ),
+                  ],
                   ),
                 ),
               ),

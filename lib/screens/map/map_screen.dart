@@ -13,6 +13,7 @@ import '../../providers/map_provider.dart';
 import '../../providers/spots_provider.dart';
 import '../../widgets/app_menu_button.dart';
 import '../../widgets/feedback.dart';
+import '../../widgets/osm_attribution.dart';
 import '../../widgets/spot_list_tile.dart';
 import '../../widgets/spot_marker.dart';
 import 'filter_sheet.dart';
@@ -101,9 +102,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
             children: [
               TileLayer(
-                urlTemplate: Theme.of(context).brightness == Brightness.dark
-                    ? AppConfig.osmTileUrlDark
-                    : AppConfig.osmTileUrl,
+                urlTemplate: AppConfig.osmTileUrl,
                 userAgentPackageName: AppConfig.osmUserAgent,
                 maxZoom: 19,
               ),
@@ -130,16 +129,10 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ],
           ),
-          // CARTO requires visible attribution wherever its tiles are shown.
           Positioned(
             left: AppSpacing.md,
             bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.xs,
-            child: IgnorePointer(
-              child: Text(
-                '© OpenStreetMap © CARTO',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
+            child: const OsmAttribution(),
           ),
           SafeArea(
             child: Padding(
@@ -162,8 +155,8 @@ class _MapScreenState extends State<MapScreen> {
             Positioned(
               left: AppSpacing.md,
               right: AppSpacing.md,
-              // Clear the floating dock (injected into bottom MediaQuery padding).
-              bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.md,
+              // Keep the map credit visible between the card and the dock.
+              bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.xl,
               child: _SelectedCard(
                 spot: selected,
                 onClose: () => mapP.select(null),

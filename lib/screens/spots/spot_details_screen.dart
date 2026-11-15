@@ -21,6 +21,7 @@ import '../../widgets/network_photo.dart';
 import '../../widgets/rating_stars.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/spot_card.dart';
+import '../../widgets/osm_attribution.dart';
 import '../../widgets/spot_marker.dart';
 import '../../widgets/user_avatar.dart';
 
@@ -531,6 +532,11 @@ class _MiniMap extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(onTap: onOpen),
               ),
+            ),
+            const Positioned(
+              left: AppSpacing.sm,
+              bottom: AppSpacing.sm,
+              child: OsmAttribution(),
             ),
             Positioned(
               right: AppSpacing.sm,
