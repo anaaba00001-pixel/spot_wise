@@ -1093,8 +1093,8 @@ class _CircleButton extends StatelessWidget {
   }
 }
 
-class DalalCategoriesScreen extends StatelessWidget {
-  const DalalCategoriesScreen({super.key});
+class LegacyDalalCategoriesScreen extends StatelessWidget {
+  const LegacyDalalCategoriesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1109,7 +1109,7 @@ class DalalCategoriesScreen extends StatelessWidget {
             bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.lg,
           ),
           children: [
-            _DalalCategorySections(
+            _LegacyDalalCategorySections(
               selected: const {},
               onToggle: context.read<HomeTab>().browseCategory,
             ),
@@ -1120,11 +1120,11 @@ class DalalCategoriesScreen extends StatelessWidget {
   }
 }
 
-class _DalalCategorySections extends StatelessWidget {
+class _LegacyDalalCategorySections extends StatelessWidget {
   final Set<String> selected;
   final ValueChanged<String> onToggle;
 
-  const _DalalCategorySections({
+  const _LegacyDalalCategorySections({
     required this.selected,
     required this.onToggle,
   });
@@ -1427,4 +1427,431 @@ class _CategoryTileState extends State<_CategoryTile>
       ),
     );
   }
+}
+
+class DalalCategoriesScreen extends StatelessWidget {
+  const DalalCategoriesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: const AppMenuButton(),
+        title: const Text('فئات دليل حائل'),
+      ),
+      body: MaxWidthBox(
+        child: ListView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.lg,
+          ),
+          children: [
+            _DalalCategorySections(
+              onBrowse: context.read<HomeTab>().browseCategory,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DalalCategorySections extends StatefulWidget {
+  const _DalalCategorySections({required this.onBrowse});
+
+  final ValueChanged<String> onBrowse;
+
+  @override
+  State<_DalalCategorySections> createState() =>
+      _DalalCategorySectionsState();
+}
+
+class _DalalCategorySectionsState extends State<_DalalCategorySections> {
+  static const _nature = 'الطبيعة والتراث';
+  static const _services = 'دليل الخدمات';
+  static const _experiences = 'تجارب حائل';
+  static const _workshops = 'الورش والأنشطة';
+
+  String? _selectedSection;
+
+  Future<void> _selectCategory(
+    BuildContext context,
+    SpotCategory category,
+    CategoryStore store,
+  ) async {
+    final children = Categories.childrenOf(
+      category.id,
+    ).where((child) => store.isEnabled(child.id)).toList();
+
+    if (children.isEmpty) {
+      widget.onBrowse(category.id);
+      return;
+    }
+
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (context) => ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.sm,
+            ),
+            child: Text(
+              category.label,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          ListTile(
+            leading: Icon(category.icon, color: category.color),
+            title: Text('كل ${category.label}'),
+            subtitle: const Text('عرض جميع الفئات الفرعية'),
+            onTap: () => Navigator.pop(context, category.id),
+          ),
+          const Divider(),
+          for (final child in children)
+            ListTile(
+              leading: Icon(child.icon, color: child.color),
+              title: Text(child.label),
+              trailing: const Icon(Icons.chevron_left_rounded),
+              onTap: () => Navigator.pop(context, child.id),
+            ),
+        ],
+      ),
+    );
+
+    if (mounted && choice != null) widget.onBrowse(choice);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<CategoryStore>();
+    final theme = Theme.of(context);
+    final sections = <String, List<SpotCategory>>{};
+
+    for (final section in Categories.sections) {
+      final entries = Categories.rootsInSection(
+        section,
+      ).where((category) => store.isEnabled(category.id)).toList();
+      if (entries.isNotEmpty) sections[section] = entries;
+    }
+
+    if (sections.isEmpty) return const SizedBox.shrink();
+
+    final selectedSection = sections.containsKey(_selectedSection)
+        ? _selectedSection!
+        : sections.containsKey(_nature)
+        ? _nature
+        : sections.keys.first;
+
+    Widget tile(
+      String section,
+      IconData icon,
+      Color lightFill,
+      Color darkFill,
+      Color lightInk,
+      Color darkInk,
+    ) {
+      final isDark = theme.brightness == Brightness.dark;
+      return _CategorySectionTile(
+        label: section,
+        icon: icon,
+        fill: isDark ? darkFill : lightFill,
+        ink: isDark ? darkInk : lightInk,
+        selected: section == selectedSection,
+        featured: section == _nature,
+        onTap: () => setState(() => _selectedSection = section),
+      );
+    }
+
+    final nature = sections.containsKey(_nature)
+        ? tile(
+            _nature,
+            Icons.terrain_rounded,
+            const Color(0xFF254B40),
+            const Color(0xFF203C34),
+            const Color(0xFFFFF8E8),
+            const Color(0xFFFFF8E8),
+          )
+        : null;
+
+    final quickLinks = [
+      if (sections.containsKey(_services))
+        tile(
+          _services,
+          Icons.storefront_outlined,
+          const Color(0xFFEBDBE7),
+          const Color(0xFF472C43),
+          const Color(0xFF64345B),
+          const Color(0xFFF3C3E8),
+        ),
+      if (sections.containsKey(_experiences))
+        tile(
+          _experiences,
+          Icons.restaurant_rounded,
+          const Color(0xFFF1DFC1),
+          const Color(0xFF503B27),
+          const Color(0xFF70441A),
+          const Color(0xFFFFD6A0),
+        ),
+    ];
+
+    final workshops = sections.containsKey(_workshops)
+        ? tile(
+            _workshops,
+            Icons.palette_outlined,
+            const Color(0xFFF0D9D3),
+            const Color(0xFF4D302C),
+            const Color(0xFF80382D),
+            const Color(0xFFFFC3B9),
+          )
+        : null;
+
+    const mainSections = {_nature, _services, _experiences, _workshops};
+    final otherSections = sections.keys.where(
+      (section) => !mainSections.contains(section),
+    );
+
+    return Padding(
+      padding: AppSpacing.screenPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: AppSpacing.lg),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final sideTiles = Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (quickLinks.isNotEmpty)
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (var i = 0; i < quickLinks.length; i++) ...[
+                            if (i > 0)
+                              const SizedBox(width: AppSpacing.sm),
+                            Expanded(child: quickLinks[i]),
+                          ],
+                        ],
+                      ),
+                    ),
+                  if (workshops != null) ...[
+                    if (quickLinks.isNotEmpty)
+                      const SizedBox(height: AppSpacing.sm),
+                    workshops,
+                  ],
+                ],
+              );
+
+              if (nature == null) return sideTiles;
+              if (quickLinks.isEmpty && workshops == null) return nature;
+
+              if (constraints.maxWidth < 500) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    nature,
+                    const SizedBox(height: AppSpacing.sm),
+                    sideTiles,
+                  ],
+                );
+              }
+
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(flex: 2, child: nature),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(flex: 3, child: sideTiles),
+                  ],
+                ),
+              );
+            },
+          ),
+          if (otherSections.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: [
+                for (final section in otherSections)
+                  ChoiceChip(
+                    avatar: Icon(sections[section]!.first.icon, size: 18),
+                    label: Text(section),
+                    selected: section == selectedSection,
+                    onSelected: (_) =>
+                        setState(() => _selectedSection = section),
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: theme.colorScheme.outlineVariant),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Semantics(
+                    header: true,
+                    liveRegion: true,
+                    child: Text(
+                      selectedSection,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    children: [
+                      for (final category in sections[selectedSection]!)
+                        ActionChip(
+                          avatar: Icon(category.icon, size: 18),
+                          label: Text(category.label),
+                          onPressed: () =>
+                              _selectCategory(context, category, store),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategorySectionTile extends StatelessWidget {
+  const _CategorySectionTile({
+    required this.label,
+    required this.icon,
+    required this.fill,
+    required this.ink,
+    required this.selected,
+    required this.featured,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color fill;
+  final Color ink;
+  final bool selected;
+  final bool featured;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: selected ? BorderSide(color: ink, width: 2) : BorderSide.none,
+    );
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: fill,
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.passthrough,
+          children: [
+            if (featured)
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(painter: _HailMountainsPainter()),
+                ),
+              ),
+            InkWell(
+              onTap: onTap,
+              customBorder: shape,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: featured ? 132 : 88),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, color: ink, size: 23),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        label,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: ink,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HailMountainsPainter extends CustomPainter {
+  const _HailMountainsPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final paint = Paint()..color = const Color(0xFFDEC58C);
+
+    canvas.drawCircle(Offset(w * .23, h * .30), 13, paint);
+
+    final distantPeaks = Path()
+      ..moveTo(0, h * .65)
+      ..lineTo(w * .15, h * .51)
+      ..lineTo(w * .28, h * .57)
+      ..lineTo(w * .45, h * .33)
+      ..lineTo(w * .55, h * .41)
+      ..lineTo(w * .65, h * .36)
+      ..lineTo(w * .82, h * .58)
+      ..lineTo(w * .92, h * .48)
+      ..lineTo(w, h * .59)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+
+    canvas.drawPath(distantPeaks, paint..color = const Color(0xFF6B8B72));
+
+    final nearPeaks = Path()
+      ..moveTo(0, h * .80)
+      ..lineTo(w * .18, h * .72)
+      ..lineTo(w * .32, h * .78)
+      ..lineTo(w * .54, h * .56)
+      ..lineTo(w * .67, h * .66)
+      ..lineTo(w * .78, h * .61)
+      ..lineTo(w, h * .80)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+
+    canvas.drawPath(nearPeaks, paint..color = const Color(0xFF3E6656));
+  }
+
+  @override
+  bool shouldRepaint(covariant _HailMountainsPainter oldDelegate) => false;
 }
