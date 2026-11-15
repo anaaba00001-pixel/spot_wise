@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/routes/app_routes.dart';
+import '../../core/localization/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/auth_gate.dart';
@@ -127,14 +128,14 @@ class _FloatingDock extends StatelessWidget {
                       index: 0,
                       icon: Icons.home_outlined,
                       selectedIcon: Icons.home_rounded,
-                      label: 'الرئيسية',
+                      label: context.tr('home'),
                     ),
                     _NavItem(
                       tab: tab,
                       index: 1,
                       icon: Icons.map_outlined,
                       selectedIcon: Icons.map_rounded,
-                      label: 'الخريطة',
+                      label: context.tr('map'),
                     ),
                     _DockAddButton(onTap: onAddSpot),
                     _NavItem(
@@ -142,14 +143,14 @@ class _FloatingDock extends StatelessWidget {
                       index: 2,
                       icon: Icons.category_outlined,
                       selectedIcon: Icons.category_rounded,
-                      label: 'الفئات',
+                      label: context.tr('categories'),
                     ),
                     _NavItem(
                       tab: tab,
                       index: 3,
                       icon: Icons.luggage_outlined,
                       selectedIcon: Icons.luggage_rounded,
-                      label: 'المفضلة',
+                      label: context.tr('favorites'),
                     ),
                   ],
                 ),
@@ -174,7 +175,7 @@ class _DockAddButton extends StatelessWidget {
       width: 58,
       child: Center(
         child: Tooltip(
-          message: 'إضافة مكان',
+          message: context.tr('addPlace'),
           child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,

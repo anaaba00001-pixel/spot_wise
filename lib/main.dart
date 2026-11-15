@@ -12,6 +12,7 @@ import 'providers/auth_provider.dart';
 import 'providers/category_store.dart';
 import 'providers/connectivity_provider.dart';
 import 'providers/map_provider.dart';
+import 'providers/locale_provider.dart';
 import 'providers/spots_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/trips_provider.dart';
@@ -33,9 +34,15 @@ Future<void> main() async {
   await ServiceLocator.instance.init();
 
   final theme = ThemeProvider();
+  final locale = LocaleProvider();
   final categories = CategoryStore();
   final connectivity = ConnectivityProvider();
-  await Future.wait([theme.load(), categories.load(), connectivity.init()]);
+  await Future.wait([
+    theme.load(),
+    locale.load(),
+    categories.load(),
+    connectivity.init(),
+  ]);
 
   final auth = AuthProvider()..bootstrap();
 
@@ -43,6 +50,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: theme),
+        ChangeNotifierProvider.value(value: locale),
         ChangeNotifierProvider.value(value: categories),
         ChangeNotifierProvider.value(value: connectivity),
         ChangeNotifierProvider.value(value: auth),

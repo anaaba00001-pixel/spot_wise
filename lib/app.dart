@@ -6,6 +6,7 @@ import 'core/routes/app_routes.dart';
 import 'core/routes/router.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/theme_provider.dart';
+import 'providers/locale_provider.dart';
 
 /// App-wide navigator key, so non-widget code (e.g. a notification tap handler)
 /// can navigate.
@@ -17,12 +18,13 @@ class SpotWiseApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mode = context.watch<ThemeProvider>().mode;
+    final localeP = context.watch<LocaleProvider>();
     return MaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
-      locale: const Locale('ar', 'SA'),
+      locale: localeP.locale,
       builder: (context, child) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: localeP.isRtl ? TextDirection.rtl : TextDirection.ltr,
         child: child ?? const SizedBox.shrink(),
       ),
       navigatorKey: navigatorKey,
