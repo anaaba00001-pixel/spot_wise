@@ -104,6 +104,13 @@ class LocalBackendService implements BackendService {
   }
 
   @override
+  Future<bool> createSpotIfAbsent(Spot spot) async {
+    if (_spots.containsKey(spot.id)) return false;
+    await _spots.put(spot.id, spot.toJson());
+    return true;
+  }
+
+  @override
   Future<void> updateSpot(Spot spot) => _spots.put(spot.id, spot.toJson());
 
   @override

@@ -23,8 +23,12 @@ import 'backend_service.dart';
 /// intentionally deferred.
 class FirebaseRestBackendService implements BackendService {
   final http.Client _client;
-  FirebaseRestBackendService({http.Client? client})
-    : _client = client ?? http.Client();
+  final Future<String?> Function()? _idToken;
+  FirebaseRestBackendService({
+    http.Client? client,
+    Future<String?> Function()? idToken,
+  }) : _idToken = idToken,
+       _client = client ?? http.Client();
 
   String get _base {
     final url = AppConfig.firebaseDbUrl;
@@ -67,8 +71,16 @@ class FirebaseRestBackendService implements BackendService {
     return (jsonDecode(res.body) as Map)['name'].toString();
   }
 
-  Future<void> _put(String path, Map<String, dynamic> data) async {
-    final res = await _client.put(_uri(path), body: jsonEncode(data));
+  Future<void> _put(
+    String path,
+    Map<String, dynamic> data, {
+    String? idToken,
+  }) async {
+    final uri = _uri(path);
+    final res = await _client.put(
+      idToken == null ? uri : uri.replace(queryParameters: {'auth': idToken}),
+      body: jsonEncode(data),
+    );
     if (res.statusCode < 200 || res.statusCode >= 300) throw ServerException();
   }
 
@@ -115,7 +127,33 @@ class FirebaseRestBackendService implements BackendService {
   }
 
   @override
-  Future<void> updateSpot(Spot spot) => _put('spots/${spot.id}', spot.toJson());
+  Future<bool> createSpotIfAbsent(Spot spot) async {
+    final token = await _idToken?.call();
+    if (token == null)
+      throw const AuthException('Sign in again before importing spots.');
+    final response = await _client
+        .put(
+          _uri('spots/${spot.id}').replace(queryParameters: {'auth': token}),
+          headers: {
+            'If-Match': 'null_etag',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(spot.toJson()),
+        )
+        .timeout(const Duration(seconds: 15));
+    if (response.statusCode == 412) return false;
+    if (response.statusCode != 200) throw ServerException();
+    return true;
+  }
+
+  @override
+  Future<void> updateSpot(Spot spot) async {
+    await _put(
+      'spots/${spot.id}',
+      spot.toJson(),
+      idToken: await _idToken?.call(),
+    );
+  }
 
   @override
   Future<void> deleteSpot(String id) => _delete('spots/$id');

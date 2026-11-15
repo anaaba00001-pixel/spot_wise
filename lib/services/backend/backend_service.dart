@@ -19,6 +19,7 @@ abstract class BackendService {
   Future<List<Spot>> getSpots({SpotStatus? status});
   Future<Spot?> getSpot(String id);
   Future<String> createSpot(Spot spot);
+  Future<bool> createSpotIfAbsent(Spot spot);
   Future<void> updateSpot(Spot spot);
   Future<void> deleteSpot(String id);
 

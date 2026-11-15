@@ -4,6 +4,7 @@ import '../../models/spot.dart';
 import '../../models/trip.dart';
 import '../../screens/admin/admin_categories_screen.dart';
 import '../../screens/admin/admin_dashboard_screen.dart';
+import '../../screens/admin/admin_import_spots_screen.dart';
 import '../../screens/admin/admin_pending_screen.dart';
 import '../../screens/admin/admin_reports_screen.dart';
 import '../../screens/ai/itinerary_result_screen.dart';
@@ -20,6 +21,7 @@ import '../../screens/profile/edit_profile_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/profile/settings_screen.dart';
 import '../../screens/search/search_screen.dart';
+import '../../screens/search/google_places_screen.dart';
 import '../../screens/shell/home_shell.dart';
 import '../../screens/splash/splash_screen.dart';
 import '../../screens/spots/add_review_screen.dart';
@@ -44,6 +46,7 @@ class AppRouter {
       AppRoutes.forgotPassword => const ForgotPasswordScreen(),
       AppRoutes.home => const HomeShell(),
       AppRoutes.search => const SearchScreen(),
+      AppRoutes.googlePlaces => const GooglePlacesScreen(),
       AppRoutes.spotDetails => SpotDetailsScreen(spot: args as Spot),
       AppRoutes.addSpot => const AddSpotScreen(),
       AppRoutes.editSpot => AddSpotScreen(existing: args as Spot),
@@ -58,6 +61,7 @@ class AppRouter {
       AppRoutes.adminReports => const AdminReportsScreen(),
       AppRoutes.adminCategories => const AdminCategoriesScreen(),
       AppRoutes.adminSpots => const AdminSpotsScreen(),
+      AppRoutes.adminImportSpots => const AdminImportSpotsScreen(),
       AppRoutes.adminUsers => const AdminUsersScreen(),
       AppRoutes.profile => const ProfileScreen(),
       AppRoutes.editProfile => const EditProfileScreen(),

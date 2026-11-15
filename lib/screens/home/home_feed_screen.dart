@@ -180,6 +180,12 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
                   Navigator.pushNamed(context, AppRoutes.adminDashboard),
             ),
           IconButton(
+            icon: const Icon(Icons.travel_explore_outlined),
+            tooltip: 'البحث في قوقل ماب',
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRoutes.googlePlaces),
+          ),
+          IconButton(
             icon: const Icon(Icons.search_rounded),
             tooltip: 'Search spots',
             onPressed: _openSpotSearch,

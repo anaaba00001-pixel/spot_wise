@@ -26,6 +26,44 @@ class FirebaseAuthRestService implements AuthService {
     : _client = client ?? http.Client();
 
   AppUser? _current;
+  String? _refreshToken;
+  String? _idToken;
+  DateTime? _tokenExpires;
+
+  void _rememberTokens(
+    Map<String, dynamic> data, {
+    bool refreshed = false,
+  }) {
+    final idToken = data[refreshed ? 'id_token' : 'idToken'] as String?;
+    final refreshToken =
+        data[refreshed ? 'refresh_token' : 'refreshToken'] as String?;
+    final seconds =
+        int.tryParse('${data[refreshed ? 'expires_in' : 'expiresIn']}') ?? 3600;
+    _idToken = idToken;
+    _refreshToken = refreshToken;
+    _tokenExpires = DateTime.now().add(Duration(seconds: seconds - 60));
+  }
+
+  Future<String?> currentIdToken() async {
+    if (_current == null) return null;
+    if (_tokenExpires?.isAfter(DateTime.now()) == true) return _idToken;
+    final refresh = _refreshToken;
+    if (refresh == null) return null;
+    final response = await _client
+        .post(
+          Uri.https('securetoken.googleapis.com', '/v1/token', {'key': _key}),
+          body: {'grant_type': 'refresh_token', 'refresh_token': refresh},
+        )
+        .timeout(const Duration(seconds: 10));
+    if (_refreshToken != refresh || response.statusCode != 200) {
+      return null;
+    }
+    _rememberTokens(
+      jsonDecode(response.body) as Map<String, dynamic>,
+      refreshed: true,
+    );
+    return _idToken;
+  }
 
   @override
   AppUser? get currentUser => _current;
@@ -101,6 +139,7 @@ class FirebaseAuthRestService implements AuthService {
     await backend.saveUser(user);
     await _persistSession(uid);
     _current = user;
+    _rememberTokens(data);
     return user;
   }
 
@@ -127,6 +166,7 @@ class FirebaseAuthRestService implements AuthService {
     await backend.saveUser(user);
     await _persistSession(uid);
     _current = user;
+    _rememberTokens(data);
     return user;
   }
 
@@ -143,6 +183,9 @@ class FirebaseAuthRestService implements AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_sessionKey);
     _current = null;
+    _refreshToken = null;
+    _idToken = null;
+    _tokenExpires = null;
   }
 
   @override

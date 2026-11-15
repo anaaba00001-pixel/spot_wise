@@ -22,6 +22,7 @@ class AppRoutes {
 
   // Discovery
   static const String search = '/search';
+  static const String googlePlaces = '/search/google';
 
   // Saved
   static const String favorites = '/favorites';
@@ -40,6 +41,7 @@ class AppRoutes {
   static const String adminReports = '/admin/reports';
   static const String adminCategories = '/admin/categories';
   static const String adminSpots = '/admin/spots';
+  static const String adminImportSpots = '/admin/spots/import';
   static const String adminUsers = '/admin/users';
 
   // Profile / settings

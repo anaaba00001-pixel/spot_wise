@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/spot.dart';
 import '../../providers/admin_provider.dart';
+import '../../providers/spots_provider.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/badges.dart';
 import '../../widgets/choice_chip_row.dart';
@@ -27,7 +28,9 @@ class _AdminPendingScreenState extends State<AdminPendingScreen> {
   String? _categoryId;
 
   Future<void> _approve(BuildContext context, Spot spot) async {
+    final spots = context.read<SpotsProvider>();
     await context.read<AdminProvider>().approve(spot);
+    await spots.load(force: true);
     if (context.mounted) {
       AppSnackbar.success(context, '“${spot.name}” approved and published.');
     }

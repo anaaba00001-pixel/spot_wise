@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/country_flags.dart';
 import '../../providers/admin_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/spots_provider.dart';
 import '../../widgets/max_width.dart';
 import '../../widgets/section_header.dart';
@@ -96,6 +97,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 subtitle: 'Search, edit, delete, verify & feature',
                 onTap: () => Navigator.pushNamed(context, AppRoutes.adminSpots),
               ),
+              if (context.watch<AuthProvider>().user?.isAdmin == true)
+                _ActionTile(
+                  icon: Icons.upload_file_outlined,
+                  title: 'استيراد أماكن من CSV',
+                  subtitle: 'معاينة الأماكن وإرسالها للمراجعة',
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.adminImportSpots),
+                ),
               _ActionTile(
                 icon: Icons.group_outlined,
                 title: 'Manage users',

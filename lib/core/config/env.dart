@@ -18,4 +18,5 @@ class Env {
   static String get firebaseDbUrl => _read('FIREBASE_DB_URL');
   static String get firebaseApiKey => _read('FIREBASE_API_KEY');
   static String get geminiApiKey => _read('GEMINI_API_KEY');
+  static String get googlePlacesProxyUrl => _read('GOOGLE_PLACES_PROXY_URL');
 }

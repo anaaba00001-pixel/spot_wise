@@ -38,7 +38,14 @@ class ServiceLocator {
     if (_initialized) return;
 
     if (AppConfig.backendMode == BackendMode.remote) {
-      backend = FirebaseRestBackendService();
+      backend = FirebaseRestBackendService(
+        idToken: () async {
+          final session = auth;
+          return session is FirebaseAuthRestService
+              ? session.currentIdToken()
+              : null;
+        },
+      );
     } else {
       _localBackend = LocalBackendService();
       backend = _localBackend!;
